@@ -96,6 +96,28 @@ Cada indicador se puede ver como **magnitud** o como **variación anual**. La va
 - **Departamentos:** capa «Límites Departamentales» del MGAP (SNIA). El recurso del catálogo indicado inicialmente (`3c1b430a…`) responde 404 y queda registrado en el manifiesto. Se excluye el polígono «Límite contestado».
 - **Superficies:** las AE no cubren la zona urbana de Montevideo (−30 % de superficie) ni los embalses del río Negro (≤ 6 % en Durazno, Tacuarembó y Río Negro).
 
+## Gráficas y video para difusión
+
+```sh
+Rscript scripts/05_graficas.R        # → docs/graficas/*.png (1080 × 1080) y sus tablas CSV
+```
+
+- `remision-mensual-por-anio.png`: remisión mensual a planta, una línea por año (INALE).
+- `remision-por-ejercicio.png`: la misma serie de julio a junio, alineada con los ejercicios DICOSE.
+- `variacion-departamentos.png`: variación de la producción declarada 2021 → 2025 por departamento (DICOSE).
+
+DICOSE no publica producción mensual. Las series mensuales son **remisión a planta** (INALE), que equivale a ≈ 91–95 % de la producción, y así se rotulan.
+
+El video de presentación (30 s, 1920 × 1080, H.264) se genera con la app corriendo en `http://127.0.0.1:3838`:
+
+```sh
+npm install playwright        # una vez; requiere Chromium de Playwright y ffmpeg
+node tools/video/grabar_video.js cuadros/
+ffmpeg -framerate 30 -i cuadros/f%04d.jpg -c:v libx264 -pix_fmt yuv420p -crf 18 -preset slow -movflags +faststart docs/video/atlas-lechero-30s.mp4
+```
+
+El guion sustituye el reloj de la página por uno que avanza 1/30 s por cuadro. Así las animaciones salen fluidas aunque el equipo renderice WebGL lentamente.
+
 ## Mapa y diseño
 
 - **Altura:** representación estadística de la magnitud, no relieve (lo indica la leyenda). La escala de altura y color es **fija por indicador y nivel para todos los ejercicios**. La altura se reduce al acercar la cámara para que las zonas altas no tapen su entorno.
