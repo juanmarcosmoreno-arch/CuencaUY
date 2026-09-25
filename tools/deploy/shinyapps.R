@@ -11,7 +11,7 @@
 #   Rscript tools/deploy/shinyapps.R
 #   (o en RStudio: abrir este archivo y «Source»)
 #
-# Se sube solo lo que la app necesita (unos 3 MB): app.R, R/, www/, los datos
+# Se sube solo lo que la app necesita (unos 2 MB): app.R, R/, www/, los datos
 # ya procesados de data/ y la tipografía de las gráficas. Los paquetes se
 # instalan en el servidor con las mismas versiones que tenés en tu computadora.
 
@@ -48,7 +48,22 @@ archivos <- c(
 message(sprintf("Subiendo %d archivos (%.1f MB) a https://%s.shinyapps.io/%s/ …", length(archivos),
                 sum(file.size(archivos)) / 1e6, CUENTA, APP_NAME))
 
+# Se publica desde una copia en una carpeta temporal: si rsconnect ve el
+# renv.lock del proyecto, lo usa completo (con los paquetes del pipeline, que
+# la app no necesita y quizá no estén instalados). Desde la copia, detecta solo
+# los paquetes que la app usa, con las versiones instaladas en tu computadora.
+bundle <- file.path(tempdir(), "cuencauy-app")
+unlink(bundle, recursive = TRUE)
+for (f in archivos) {
+  dir.create(file.path(bundle, dirname(f)), recursive = TRUE, showWarnings = FALSE)
+  file.copy(f, file.path(bundle, f))
+}
+
+# Detección de paquetes «clásica» (packrat): sigue solo Depends/Imports de lo que
+# la app usa. La de renv también exige paquetes sugeridos que no hacen falta.
+options(rsconnect.packrat = TRUE)
+
 rsconnect::deployApp(
-  appDir = ".", appFiles = archivos, appName = APP_NAME, appTitle = "CuencaUY",
+  appDir = bundle, appName = APP_NAME, appTitle = "CuencaUY",
   account = CUENTA, server = "shinyapps.io", forceUpdate = TRUE, launch.browser = interactive()
 )
