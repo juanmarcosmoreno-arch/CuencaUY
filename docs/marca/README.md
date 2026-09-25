@@ -4,6 +4,8 @@
 
 El símbolo une un marcador de mapa y una gota de leche: la lechería ubicada en el territorio. Funciona desde 16 px.
 
+Usa solo colores de la app. El pin lleva el degradé de la escala de producción del mapa (`#3F9185` → `#1F7470` → `#0E5553`), el mismo de las extrusiones 3D. En la versión oscura, el degradé es `#9CCCA8` → `#6DB096` → `#3F9185`, «UY» va en `#6DB096` y el lema en `#C9E4C3`. El ícono de app va plano (fondo `#176B60`, pin crema), porque a 16–32 px se lee mejor sin degradé.
+
 | Archivo | Uso |
 |---|---|
 | `cuencauy-horizontal.svg` / `.png` | Logo principal sobre fondos claros |
@@ -22,7 +24,6 @@ El texto está convertido a trazados (tipografía Inter, SIL OFL), así que los 
 | Verde cuenca | `#176B60` | Símbolo, «UY», botones, acentos |
 | Verde cuenca oscuro | `#0F4F47` | Hover, texto sobre verde claro |
 | Tinta | `#172B2A` | Texto principal, fondos oscuros |
-| Menta | `#7FC4AC` | Símbolo y «UY» sobre fondo oscuro |
 | Crema | `#F5F3EE` | Fondo general, gota del símbolo |
 | Blanco | `#FFFFFF` | Superficies (paneles, tarjetas) |
 | Gris texto | `#667773` | Texto secundario, lema |
