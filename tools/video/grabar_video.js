@@ -158,6 +158,8 @@ const GUIONES = {
       { at: 21.3, js: `HTMLWidgets.find('#map').getMap().easeTo({bearing: -18, pitch: 50, zoom: HTMLWidgets.find('#map').getMap().getZoom() - 0.35, duration: 3000})` },
     ],
     cursor: [3.7, 35.4], outro: 35.8,
+    outroSub: '637 áreas · 19 departamentos · rodeo, clima y tendencias',
+    outroMeta: 'Datos abiertos: <b>MGAP (DICOSE–SNIG)</b>, <b>INALE</b> y <b>CHIRPS</b> &nbsp;·&nbsp; Hecho con R, Shiny y MapLibre',
     // La ventana de Tendencias se corre a la izquierda para dejar lugar al rótulo.
     css: `.modal-xl { max-width: 1010px !important; margin-left: 36px !important; } #v-cap { top: 360px; }`,
   },
@@ -178,6 +180,10 @@ const plan = () => G.moves.map(m => ({ ...m }));
   await page.waitForTimeout(6000);                     // carga del mapa base y datos
   await page.evaluate(() => { const i = document.getElementById('intro'); if (i) i.remove(); });   // la intro de la app se monta aparte
   await page.evaluate(OVERLAY);
+  if (G.outroSub) await page.evaluate(g => {
+    document.querySelector('#v-outro .v-sub').textContent = g.outroSub;
+    document.querySelector('#v-outro .v-meta').innerHTML = g.outroMeta;
+  }, { outroSub: G.outroSub, outroMeta: G.outroMeta });
   if (G.css) await page.evaluate(css => { const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st); }, G.css);
   await page.waitForTimeout(500);
   const cdp = await ctx.newCDPSession(page);
