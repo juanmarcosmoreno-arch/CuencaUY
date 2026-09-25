@@ -1,7 +1,7 @@
 # Formato numérico en español de Uruguay y utilidades de interfaz.
 
 fmt_int <- function(x) {
-  ifelse(is.na(x), "—", formatC(round(x), format = "d", big.mark = ".", decimal.mark = ","))
+  ifelse(is.na(x), "—", formatC(round(x), format = "f", digits = 0, big.mark = ".", decimal.mark = ","))
 }
 
 fmt_num <- function(x, digits = 1) {

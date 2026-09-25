@@ -39,6 +39,8 @@ atlas_header <- function() {
         span(class = "brand-divider", `aria-hidden` = "true"),
         p(class = "brand-sub", "La lechería uruguaya en el mapa")),
     div(class = "header-meta",
+        tags$button(type = "button", class = "btn-ghost btn-tend", id = "btn-tendencias",
+                    icon("chart-line"), span(class = "label", "Tendencias")),
         tags$button(type = "button", class = "btn-ghost", id = "btn-about",
                     icon("info"), span(class = "label", "Fuentes y método")))
   )

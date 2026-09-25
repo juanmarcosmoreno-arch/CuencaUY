@@ -128,4 +128,51 @@ test_that("la capa climática se integra sin alterar la producción", {
   expect_match(as.character(detail_ui(a2, "ae", "0804006", "lluvia", 2023)), "mm de lluvia")
 })
 
+test_that("formato entero admite litros por encima de 2^31", {
+  expect_equal(fmt_int(2275012575), "2.275.012.575")
+})
+
+test_that("Tendencias: series oficiales, vistas, tooltip y CSV", {
+  a2 <- add_climate(atlas)
+  T <- load_tendencias(a2)
+  skip_if(is.null(T$remision), "sin data/tendencias.rds")
+  r <- T$remision
+  expect_false(anyDuplicated(paste(r$anio, r$mes)) > 0)
+  expect_true(all(r$mes %in% 1:12) && all(r$ml > 0))
+  expect_equal(min(r$anio), 2002)
+  # El ejercicio julio–junio sumado coincide con la remisión usada en el contraste INALE.
+  tot <- tapply(r$ml, r$ejercicio, sum)
+  i <- a2$inale
+  expect_equal(as.numeric(tot[as.character(i$ejercicio)]), as.numeric(i$remision_ML), tolerance = 1e-6)
+  for (v in T$views) {
+    x <- tv_view(T, v, tv_default_years(T$anios), tv_default_years(T$ejercicios))
+    expect_s3_class(x$plot, "ggplot")
+    expect_true(all(c("x", "y", "tip_title", "tip_value") %in% names(x$data)), info = v)
+    expect_gt(nrow(x$csv), 0)
+    expect_match(x$source, "Fuente")
+    expect_false(grepl("NA", paste(x$data$tip_value, collapse = " ")), info = v)
+  }
+  # Años elegidos: solo esos aparecen; sin años, no hay gráfica.
+  m <- tv_view(T, "mes", c("2010", "2024"))
+  expect_equal(sort(unique(m$data$anio)), c(2010L, 2024L))
+  expect_null(tv_view(T, "mes", character(0)))
+  # Tooltip: el punto más cercano al cursor y la barra bajo el cursor.
+  y5 <- m$data$ml[m$data$anio == 2024 & m$data$mes == 5]
+  px <- list(x = (5 - 0.75) / 11.5 * 800, y = 400 - (y5 - 50) / 200 * 400)
+  hv <- list(x = 5, y = y5, coords_css = px, coords_img = px,
+             img_css_ratio = list(x = 1, y = 1),
+             domain = list(left = 0.75, right = 12.25, bottom = 50, top = 250),
+             range = list(left = 0, right = 800, bottom = 400, top = 0), log = list(x = NULL, y = NULL),
+             mapping = list(x = "x", y = "y"))
+  h <- tv_hit(m, hv)
+  expect_equal(h$tip_title, "Mayo 2024")
+  d <- tv_view(T, "deps")
+  hd <- tv_hit(d, list(x = 0, y = d$data$y[1] + 0.2))
+  expect_equal(hd$dep, d$data$dep[1])
+  expect_null(tv_hit(d, list(x = 0, y = nrow(d$data) + 3)))
+  html <- as.character(tendencias_modal(T))
+  expect_match(html, "fuentes públicas")
+  expect_match(html, "tv_years_mes")
+})
+
 withr_defer()

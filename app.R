@@ -25,6 +25,7 @@ if (!is.null(ATLAS)) {
   SEARCH <- build_search_index(ATLAS)
   STYLE  <- tryCatch(load_basemap_style(), error = function(e) offline_style())
   if (identical(Sys.getenv("ATLAS_OFFLINE"), "1")) STYLE <- offline_style()
+  TEND <- load_tendencias(ATLAS)
 }
 
 ui <- atlas_ui(ATLAS)
@@ -158,6 +159,38 @@ server <- function(input, output, session) {
   }, bg = "transparent", res = 110)
 
   observeEvent(input$about, showModal(about_modal(ATLAS)))
+
+  # Tendencias: gráficas interactivas con las series oficiales -----------------
+  observeEvent(input$tendencias, showModal(tendencias_modal(TEND)))
+
+  tv <- reactive({
+    view <- input$tv_view %||% unname(TEND$views[1])
+    narrow <- (session$clientData$output_tv_plot_width %||% 900) < 600
+    tv_view(TEND, view, input$tv_years_mes, input$tv_years_ej, narrow)
+  })
+  output$tv_head <- renderUI({
+    v <- tv()
+    if (is.null(v)) return(p(class = "tv-sub", "Elija al menos un año."))
+    tagList(h3(class = "tv-title", v$title), p(class = "tv-sub", v$sub))
+  })
+  output$tv_source <- renderUI(if (!is.null(v <- tv())) p(v$source))
+  output$tv_plot <- renderPlot({
+    v <- tv(); req(v)
+    v$plot
+  }, bg = "transparent", res = 96, height = function() {
+    w <- session$clientData$output_tv_plot_width %||% 900
+    view <- isolate(input$tv_view) %||% "mes"
+    r <- switch(view, rodeo = , precio = , clima = c(0.5, 480), deps = c(0.44, 460, 440), c(0.42, 430))
+    round(min(max(w * r[1], if (length(r) > 2) r[3] else 300), r[2]))
+  })
+  output$tv_tip <- renderUI({
+    h <- input$tv_hover
+    tv_tip_ui(tv_hit(tv(), h), h, session$clientData$output_tv_plot_width)
+  })
+  output$tv_csv <- downloadHandler(
+    filename = function() tv()$file %||% "cuencauy.csv",
+    content = function(file) utils::write.csv(tv()$csv, file, row.names = FALSE, fileEncoding = "UTF-8")
+  )
 }
 
 shinyApp(ui, server)

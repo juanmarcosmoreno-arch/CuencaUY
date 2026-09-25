@@ -99,6 +99,25 @@ Cada indicador se puede ver como **magnitud** o como **variación anual**. La va
 - **Departamentos:** capa «Límites Departamentales» del MGAP (SNIA). El recurso del catálogo indicado inicialmente (`3c1b430a…`) responde 404 y queda registrado en el manifiesto. Se excluye el polígono «Límite contestado».
 - **Superficies:** las AE no cubren la zona urbana de Montevideo (−30 % de superficie) ni los embalses del río Negro (≤ 6 % en Durazno, Tacuarembó y Río Negro).
 
+## Tendencias: gráficas dentro de la app
+
+El botón **Tendencias** del encabezado abre las gráficas interactivas. Al pasar el cursor (o tocar, en el celular) se ve el valor de cada punto o barra, y cada vista se descarga en CSV.
+
+| Vista | Qué muestra | Fuente pública |
+|---|---|---|
+| Leche por mes | Remisión mensual a planta, una línea por año (2002 en adelante). Los años se eligen con los botones; hay atajos para los últimos 5, desde 2021 o todos | INALE, estadísticas lecheras |
+| Año lechero | La misma serie de julio a junio, igual que los ejercicios DICOSE | INALE |
+| Rodeo y tambos | Producción, vacas masa, litros por vaca y tambos, 2021–2025 | MGAP, DICOSE–SNIG (Catálogo de Datos Abiertos) |
+| Departamentos | Variación de la producción 2021 → 2025 | MGAP, DICOSE–SNIG |
+| Precio | Precio real al productor y remisión por ejercicio | INALE (precio y remisión), INE (IPC) |
+| Clima | Lluvia en la cuenca frente a la normal y variación de la remisión | CHIRPS v2.0, INALE |
+
+Todas las cifras salen de fuentes públicas descargadas por el pipeline: ninguna es estimada ni simulada por la app. La serie mensual se guarda en `data/tendencias.rds` (`scripts/05_graficas.R`).
+
+| Escritorio | Móvil |
+|---|---|
+| ![Tendencias en escritorio](docs/capturas/tendencias-escritorio.png) | ![Tendencias en el celular](docs/capturas/tendencias-movil.png) |
+
 ## Marca y presentación
 
 Al abrir la app se reproducen los primeros 6 s de la animación del logo (`www/intro/`, WebM VP9 con respaldo MP4 H.264, sin audio). Se puede saltar con el botón, un clic o las teclas Esc, Enter o espacio. Con «reducir movimiento» activado en el sistema, se muestra el logo fijo 1,5 s. Si el video no se puede reproducir, la app aparece igual a los 2,5 s. Logo, favicon e ícono están en `www/brand/`, y la guía de marca en `docs/marca/`.

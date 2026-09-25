@@ -82,6 +82,11 @@ inale <- expand_grid(mes = 1:12, j = seq_along(yrs)) |>
          ml = mapply(function(m, j) suppressWarnings(as.numeric(x[[j + 1]][rows[m]])), mes, j)) |>
   filter(!is.na(anio), !is.na(ml)) |> select(anio, mes, ml)
 ultimo <- inale |> arrange(anio, mes) |> tail(1)
+# La app (sección «Tendencias») usa la serie mensual completa.
+saveRDS(list(remision = inale |> arrange(anio, mes), ultimo = ultimo,
+             fuente = "INALE, remisión a planta (millones de litros)",
+             generado = format(Sys.time(), "%Y-%m-%d")),
+        file.path(DIR_DATA, "tendencias.rds"))
 msg("INALE: remisión mensual hasta ", MESES[ultimo$mes], " ", ultimo$anio)
 
 # 1. Año calendario ------------------------------------------------------------
