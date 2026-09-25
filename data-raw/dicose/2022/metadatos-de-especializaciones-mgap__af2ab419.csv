@@ -1,0 +1,3 @@
+ATRIBUTO;XML;DESCRIPCION ;ORIGEN;LIMITANTES CONOCIDAS;NOTAS
+EspecializacionMGAPCodigo;EspecializacionMGAPCodigo;Código del tipo de especialización;Tabla de tipos de producción;;Se basa en las definciones utilizadas por DIEA para los anuarios estadísticos
+EspecializacionMGAPDescripcion;EspecializacionMGAPDescripcion;Descripción del tipo de especialización;Tabla de tipos de producción;;Se basa en las definciones utilizadas por DIEA para los anuarios estadísticos

@@ -8,3 +8,11 @@ renv/local/
 renv/staging/
 renv/cellar/
 tests/screenshots/*.png
+
+# Recursos DICOSE no usados por el atlas (se regeneran con scripts/01_download_dicose.R)
+data-raw/dicose/*/animales-detallados__*
+data-raw/dicose/*/datos-animales__*
+data-raw/dicose/*/datos-generales__*
+data-raw/dicose/*/tenencia-de-tierra__*
+data-raw/dicose/*/uso-de-la-tierra__*
+data-raw/dicose/*/mejoramientos-de-tierras__*

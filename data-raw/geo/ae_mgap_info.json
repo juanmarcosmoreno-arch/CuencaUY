@@ -1,0 +1,250 @@
+{
+  "currentVersion": 10.91,
+  "cimVersion": "2.9.0",
+  "id": 5,
+  "name": "Áreas de Enumeración (AE)",
+  "type": "Feature Layer",
+  "description": "",
+  "geometryType": "esriGeometryPolygon",
+  "sourceSpatialReference": {
+    "wkid": 32721,
+    "latestWkid": 32721,
+    "xyTolerance": 0.001,
+    "zTolerance": 0.001,
+    "mTolerance": 0.001,
+    "falseX": -5120900,
+    "falseY": 1900,
+    "xyUnits": 10000,
+    "falseZ": 0,
+    "zUnits": 1,
+    "falseM": 0,
+    "mUnits": 1
+  },
+  "copyrightText": "",
+  "parentLayer": {
+    "id": 4,
+    "name": "Unidades Censales Agropecuarias (DIEA)"
+  },
+  "subLayers": [],
+  "minScale": 0,
+  "maxScale": 0,
+  "referenceScale": 0,
+  "drawingInfo": {
+    "renderer": {
+      "type": "simple",
+      "symbol": {
+        "type": "esriSFS",
+        "style": "esriSFSSolid",
+        "color": [
+          196,
+          238,
+          252,
+          255
+        ],
+        "outline": {
+          "type": "esriSLS",
+          "style": "esriSLSSolid",
+          "color": [
+            110,
+            110,
+            110,
+            255
+          ],
+          "width": 0.7
+        }
+      }
+    },
+    "scaleSymbols": true,
+    "transparency": 0,
+    "labelingInfo": {}
+  },
+  "defaultVisibility": true,
+  "extent": {
+    "xmin": 366651.7679,
+    "ymin": 6128321.4215,
+    "xmax": 858441.4279,
+    "ymax": 6671679.4326,
+    "spatialReference": {
+      "wkid": 32721,
+      "latestWkid": 32721,
+      "xyTolerance": 0.001,
+      "zTolerance": 0.001,
+      "mTolerance": 0.001,
+      "falseX": -5120900,
+      "falseY": 1900,
+      "xyUnits": 10000,
+      "falseZ": -100000,
+      "zUnits": 10000,
+      "falseM": -100000,
+      "mUnits": 10000
+    }
+  },
+  "hasAttachments": false,
+  "htmlPopupType": "esriServerHTMLPopupTypeAsHTMLText",
+  "displayField": "NOMDEPTO",
+  "typeIdField": {},
+  "subtypeFieldName": {},
+  "subtypeField": {},
+  "defaultSubtypeCode": {},
+  "fields": [
+    {
+      "name": "OBJECTID",
+      "type": "esriFieldTypeOID",
+      "alias": "OBJECTID",
+      "domain": {}
+    },
+    {
+      "name": "NOMDEPTO",
+      "type": "esriFieldTypeString",
+      "alias": "NOMDEPTO",
+      "length": 25,
+      "domain": {}
+    },
+    {
+      "name": "DEPTO",
+      "type": "esriFieldTypeDouble",
+      "alias": "DEPTO",
+      "domain": {}
+    },
+    {
+      "name": "AREASUP",
+      "type": "esriFieldTypeInteger",
+      "alias": "AREASUP",
+      "domain": {}
+    },
+    {
+      "name": "AREAENUM",
+      "type": "esriFieldTypeInteger",
+      "alias": "AREAENUM",
+      "domain": {}
+    },
+    {
+      "name": "CCOMPAS",
+      "type": "esriFieldTypeInteger",
+      "alias": "CCOMPAS",
+      "domain": {}
+    },
+    {
+      "name": "CCOMPAE",
+      "type": "esriFieldTypeInteger",
+      "alias": "CCOMPAE",
+      "domain": {}
+    },
+    {
+      "name": "SDEMGAP.MGAPEDITOR.AreaEnumeracion_DIEA.Area",
+      "type": "esriFieldTypeInteger",
+      "alias": "SDEMGAP.MGAPEDITOR.AreaEnumeracion_DIEA.Area",
+      "domain": {}
+    },
+    {
+      "name": "Shape",
+      "type": "esriFieldTypeGeometry",
+      "alias": "Shape",
+      "domain": {}
+    },
+    {
+      "name": "Shape.STArea()",
+      "type": "esriFieldTypeDouble",
+      "alias": "Shape.STArea()",
+      "domain": {}
+    },
+    {
+      "name": "Shape.STLength()",
+      "type": "esriFieldTypeDouble",
+      "alias": "Shape.STLength()",
+      "domain": {}
+    }
+  ],
+  "geometryField": {
+    "name": "Shape",
+    "type": "esriFieldTypeGeometry",
+    "alias": "Shape"
+  },
+  "indexes": [
+    {
+      "name": "R68_pk",
+      "fields": "OBJECTID",
+      "isAscending": true,
+      "isUnique": true,
+      "description": ""
+    },
+    {
+      "name": "S57_idx",
+      "fields": "Shape",
+      "isAscending": true,
+      "isUnique": true,
+      "description": ""
+    }
+  ],
+  "subtypes": [],
+  "relationships": [],
+  "canModifyLayer": true,
+  "canScaleSymbols": false,
+  "hasLabels": false,
+  "capabilities": "Map,Query,Data",
+  "maxRecordCount": 2000,
+  "supportsStatistics": true,
+  "supportsExceedsLimitStatistics": true,
+  "supportsAdvancedQueries": true,
+  "supportedQueryFormats": "JSON, geoJSON, PBF",
+  "isDataVersioned": false,
+  "ownershipBasedAccessControlForFeatures": {
+    "allowOthersToQuery": true
+  },
+  "useStandardizedQueries": true,
+  "supportedSpatialRelationships": [
+    "esriSpatialRelIntersects",
+    "esriSpatialRelContains",
+    "esriSpatialRelCrosses",
+    "esriSpatialRelEnvelopeIntersects",
+    "esriSpatialRelIndexIntersects",
+    "esriSpatialRelOverlaps",
+    "esriSpatialRelTouches",
+    "esriSpatialRelWithin",
+    "esriSpatialRelRelation"
+  ],
+  "advancedQueryCapabilities": {
+    "useStandardizedQueries": true,
+    "supportsStatistics": true,
+    "supportsPercentileStatistics": true,
+    "supportsHavingClause": true,
+    "supportsOrderBy": true,
+    "supportsDistinct": true,
+    "supportsCountDistinct": true,
+    "supportsPagination": true,
+    "supportsLod": false,
+    "supportsQueryWithLodSR": false,
+    "supportsTrueCurve": true,
+    "supportsQueryWithDatumTransformation": true,
+    "supportsReturningQueryExtent": true,
+    "supportsQueryWithDistance": true,
+    "supportsSqlExpression": true,
+    "supportsTimeRelation": true,
+    "supportsSqlFormat": false,
+    "supportsQueryAnalytic": true
+  },
+  "supportsDatumTransformation": true,
+  "advancedQueryAnalyticCapabilities": {
+    "supportsLinearRegression": true,
+    "supportsAsync": false,
+    "supportsPercentileAnalytic": true
+  },
+  "dateFieldsTimeReference": {},
+  "preferredTimeReference": {},
+  "datesInUnknownTimezone": false,
+  "hasGeometryProperties": true,
+  "geometryProperties": {
+    "shapeAreaFieldName": "Shape.STArea()",
+    "shapeLengthFieldName": "Shape.STLength()",
+    "units": "esriMeters"
+  },
+  "hasMetadata": true,
+  "isDataArchived": false,
+  "archivingInfo": {
+    "supportsQueryWithHistoricMoment": false,
+    "startArchivingMoment": -1
+  },
+  "supportsCoordinatesQuantization": true,
+  "supportsDynamicLegends": true,
+  "serviceItemId": "35e14c93db2845bbafb5365a20b3072d"
+}

@@ -1,0 +1,3 @@
+ATRIBUTO;XML;DESCRIPCION ;ORIGEN;LIMITANTES CONOCIDAS;NOTAS
+EspecieCodigo;EspecieCodigo;Código de la especie;Tabla de especies;;
+EspecieDescripcion;EspecieDescripcion;Descripción de la especie;Tabla de especies;;

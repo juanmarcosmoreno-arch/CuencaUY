@@ -1,0 +1,3 @@
+ATRIBUTO;VARIABLE;DESCRIPCION ;ORIGEN;LIMITANTES CONOCIDAS;NOTAS
+NaturalezaJuridicaCodigo;NaturalezaJuridicaCodigo;Código de la naturaleza jurídica;Tabla de naturalezas jurídicas;;
+NaturalezaJuridicaDescripcion;NaturalezaJuridicaDescripcion;Descripción de la naturaleza jurídica;Tabla de naturalezas jurídicas;;

@@ -1,0 +1,3 @@
+ATRIBUTO;XML;DESCRIPCION ;ORIGEN;LIMITANTES CONOCIDAS;NOTAS
+DepartamentoCodigo;DepartamentoCodigo;Código del departamento;Tabla de departamentos;;
+DepartamentoDescripcion;DepartamentoDescripcion;Descripción del departamento;Tabla de departamentos;;

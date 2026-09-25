@@ -1,0 +1,43 @@
+ns1:GiroCodigo;ns1:GiroDescripcion
+1;Ganadería
+2;Lechería
+3;Agricultura
+4;Citricultura
+5;Forestación
+6;Horticultura
+7;Vitivinicultura
+8;Frigorífico
+9;Matadero carnicería
+10;Carnicería sin planta de faena
+11;Matadero Chacinería
+12;Chacinería sin planta de faena
+13;Rematador
+14;Consignatario
+15;Exportador e importador de ganado en pie
+16;Tenedor de campo sin ganado propio
+17;Futuras operaciones
+18;Propietarios de ganado sin campo
+19;Organismos Oficiales
+20;Avicultura
+21;Fruticultura
+22;Local Feria
+23;Administrador de Campo de Recría
+24;Fasonero de Aves
+25;Tenedores de Aves sin granja
+26;Intermediarios de Aves
+27;Planta de Faena de Aves
+28;Importador de Aves/Huevos
+30;Tenedor de equinos con campo
+31;Tenedor de equinos sin campo
+32;Previo a acopio equinos
+33;ACOPIADOR DE EQUINOS
+40;Tenedor de caprinos
+50;Suinicultura
+51;Acopiador de Suinos
+52;Rematador de Suinos
+60;ENGORDE A CORRAL
+61;Cuarentenarios
+62;Campos de recría
+63;Lechería sin campo
+64;Lechería con quesería
+65;Lechería para autoconsumo

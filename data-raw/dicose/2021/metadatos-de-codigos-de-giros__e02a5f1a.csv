@@ -1,0 +1,3 @@
+ATRIBUTO;XML;DESCRIPCION ;ORIGEN;LIMITANTES CONOCIDAS;NOTAS
+GiroCodigo;GiroCodigo;Código del giro;Tabla de giros;;
+GiroDescripcion;GiroDescripcion;Descripción del giro;Tabla de giros;;

@@ -1,0 +1,3 @@
+ATRIBUTO;XML;DESCRIPCION ;ORIGEN;LIMITANTES CONOCIDAS;NOTAS
+TipoProduccionMGAPCodigo;TipoProduccionMGAPCodigo;Código del tipo de producción;Tabla de tipos de producción;;Se basa en las definciones utilizadas por DIEA para los anuarios estadísticos
+TipoProduccionMGAPDescripcion;TipoProduccionMGAPDescripcion;Descripción del tipo de producción;Tabla de tipos de producción;;Se basa en las definciones utilizadas por DIEA para los anuarios estadísticos

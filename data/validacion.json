@@ -1,0 +1,242 @@
+[
+  {
+    "id": "ae_codigos_unicos",
+    "ok": true,
+    "detalle": "637 polígonos, 637 códigos CCOMPAE distintos"
+  },
+  {
+    "id": "ae_prefijo_departamento",
+    "ok": true,
+    "detalle": "Los dos primeros dígitos del código de AE coinciden con el departamento (nomenclatura INE)"
+  },
+  {
+    "id": "ae_nombre_departamento",
+    "ok": true,
+    "detalle": "El nombre de departamento de cada AE corresponde a su código INE"
+  },
+  {
+    "id": "ae_geometrias_validas",
+    "ok": true,
+    "detalle": "2 geometrías inválidas en el original, reparadas con st_make_valid()"
+  },
+  {
+    "id": "departamentos_19",
+    "ok": true,
+    "detalle": "19 departamentos; se excluye 1 polígono «LÍMITE CONTESTADO» de la capa oficial"
+  },
+  {
+    "id": "ae_cubren_departamentos",
+    "ok": true,
+    "detalle": "Superficie AE agregadas vs. límites oficiales: máx. 5.7 % fuera de Montevideo (embalses); Montevideo -30 % (solo zona rural)"
+  },
+  {
+    "id": "simplificacion_conserva_entidades",
+    "ok": true,
+    "detalle": "AE: 342570 → 26735 vértices; departamentos: 168504 → 9121 vértices"
+  },
+  {
+    "id": "diccionario_departamentos",
+    "ok": true,
+    "detalle": "Códigos DICOSE de departamento (orden alfabético, Montevideo = 10) traducidos a INE por nombre"
+  },
+  {
+    "id": "2021_ejercicio",
+    "ok": true,
+    "detalle": "Todas las filas declaran el ejercicio del archivo"
+  },
+  {
+    "id": "2021_litros_validos",
+    "ok": true,
+    "detalle": "5621 filas; litros sin faltantes ni negativos (0 ceros)"
+  },
+  {
+    "id": "2021_tipos_en_diccionario",
+    "ok": true,
+    "detalle": "Tipos presentes: 1, 2, 3, 4, 5, 10, 11"
+  },
+  {
+    "id": "2021_sin_duplicados",
+    "ok": true,
+    "detalle": "Ninguna combinación de atributos se repite: no hay subtotales dentro del archivo"
+  },
+  {
+    "id": "2021_ae_con_poligono",
+    "ok": true,
+    "detalle": "354 áreas con leche; todas tienen polígono"
+  },
+  {
+    "id": "2021_departamento_coherente",
+    "ok": true,
+    "detalle": "2 filas con departamento registrado distinto al del AE (0.000 % de los litros)"
+  },
+  {
+    "id": "2021_tipo10_no_es_subtotal",
+    "ok": true,
+    "detalle": "Tipo 10 en 3 combinaciones, ninguna con tipos 1 o 2"
+  },
+  {
+    "id": "2022_ejercicio",
+    "ok": true,
+    "detalle": "Todas las filas declaran el ejercicio del archivo"
+  },
+  {
+    "id": "2022_litros_validos",
+    "ok": true,
+    "detalle": "5501 filas; litros sin faltantes ni negativos (0 ceros)"
+  },
+  {
+    "id": "2022_tipos_en_diccionario",
+    "ok": true,
+    "detalle": "Tipos presentes: 1, 2, 3, 4, 5, 10, 11"
+  },
+  {
+    "id": "2022_sin_duplicados",
+    "ok": true,
+    "detalle": "Ninguna combinación de atributos se repite: no hay subtotales dentro del archivo"
+  },
+  {
+    "id": "2022_ae_con_poligono",
+    "ok": true,
+    "detalle": "346 áreas con leche; todas tienen polígono"
+  },
+  {
+    "id": "2022_departamento_coherente",
+    "ok": true,
+    "detalle": "0 filas con departamento registrado distinto al del AE (0.000 % de los litros)"
+  },
+  {
+    "id": "2022_tipo10_no_es_subtotal",
+    "ok": true,
+    "detalle": "Tipo 10 en 2 combinaciones, ninguna con tipos 1 o 2"
+  },
+  {
+    "id": "2023_ejercicio",
+    "ok": true,
+    "detalle": "Todas las filas declaran el ejercicio del archivo"
+  },
+  {
+    "id": "2023_litros_validos",
+    "ok": true,
+    "detalle": "5367 filas; litros sin faltantes ni negativos (0 ceros)"
+  },
+  {
+    "id": "2023_tipos_en_diccionario",
+    "ok": true,
+    "detalle": "Tipos presentes: 1, 2, 3, 4, 5, 10"
+  },
+  {
+    "id": "2023_sin_duplicados",
+    "ok": true,
+    "detalle": "Ninguna combinación de atributos se repite: no hay subtotales dentro del archivo"
+  },
+  {
+    "id": "2023_ae_con_poligono",
+    "ok": true,
+    "detalle": "342 áreas con leche; todas tienen polígono"
+  },
+  {
+    "id": "2023_departamento_coherente",
+    "ok": true,
+    "detalle": "0 filas con departamento registrado distinto al del AE (0.000 % de los litros)"
+  },
+  {
+    "id": "2023_tipo10_no_es_subtotal",
+    "ok": true,
+    "detalle": "Tipo 10 en 2 combinaciones, ninguna con tipos 1 o 2"
+  },
+  {
+    "id": "2024_ejercicio",
+    "ok": true,
+    "detalle": "Todas las filas declaran el ejercicio del archivo"
+  },
+  {
+    "id": "2024_litros_validos",
+    "ok": true,
+    "detalle": "5178 filas; litros sin faltantes ni negativos (0 ceros)"
+  },
+  {
+    "id": "2024_tipos_en_diccionario",
+    "ok": true,
+    "detalle": "Tipos presentes: 1, 2, 3, 4, 5, 10, 11"
+  },
+  {
+    "id": "2024_sin_duplicados",
+    "ok": true,
+    "detalle": "Ninguna combinación de atributos se repite: no hay subtotales dentro del archivo"
+  },
+  {
+    "id": "2024_ae_con_poligono",
+    "ok": true,
+    "detalle": "337 áreas con leche; todas tienen polígono"
+  },
+  {
+    "id": "2024_departamento_coherente",
+    "ok": true,
+    "detalle": "0 filas con departamento registrado distinto al del AE (0.000 % de los litros)"
+  },
+  {
+    "id": "2024_tipo10_no_es_subtotal",
+    "ok": true,
+    "detalle": "Tipo 10 en 5 combinaciones, ninguna con tipos 1 o 2"
+  },
+  {
+    "id": "2025_ejercicio",
+    "ok": true,
+    "detalle": "Todas las filas declaran el ejercicio del archivo"
+  },
+  {
+    "id": "2025_litros_validos",
+    "ok": true,
+    "detalle": "4946 filas; litros sin faltantes ni negativos (0 ceros)"
+  },
+  {
+    "id": "2025_tipos_en_diccionario",
+    "ok": true,
+    "detalle": "Tipos presentes: 1, 2, 3, 4, 5, 10"
+  },
+  {
+    "id": "2025_sin_duplicados",
+    "ok": true,
+    "detalle": "Ninguna combinación de atributos se repite: no hay subtotales dentro del archivo"
+  },
+  {
+    "id": "2025_ae_con_poligono",
+    "ok": true,
+    "detalle": "332 áreas con leche; todas tienen polígono"
+  },
+  {
+    "id": "2025_departamento_coherente",
+    "ok": true,
+    "detalle": "0 filas con departamento registrado distinto al del AE (0.000 % de los litros)"
+  },
+  {
+    "id": "2025_tipo10_no_es_subtotal",
+    "ok": true,
+    "detalle": "Tipo 10 en 1 combinaciones, ninguna con tipos 1 o 2"
+  },
+  {
+    "id": "metadatos_litros",
+    "ok": true,
+    "detalle": "«Producción de leche»: litros producidos; «en establecimiento»: litros industrializados en el predio (no se usa como producción)"
+  },
+  {
+    "id": "suma_ae_mas_sin_asignar_igual_nacional",
+    "ok": true,
+    "detalle": "Σ AE + litros sin AE = total nacional (bovinos de leche), cada ejercicio"
+  },
+  {
+    "id": "suma_departamentos_igual_nacional",
+    "ok": true,
+    "detalle": "Σ departamentos = total nacional, cada ejercicio"
+  },
+  {
+    "id": "contraste_inale_produccion",
+    "ok": true,
+    "detalle": "Producción DICOSE / remisión INALE (jul–jun): 2021: 1.08; 2022: 1.05; 2023: 1.09; 2024: 1.09; 2025: 1.10"
+  },
+  {
+    "id": "contraste_inale_venta",
+    "ok": true,
+    "detalle": "Leche vendida DICOSE / remisión INALE: 0.92, 0.88, 0.92, 0.91, 0.92 (venta a industria sola: 0.79, 0.82, 0.86, 0.81, 0.88)"
+  }
+]

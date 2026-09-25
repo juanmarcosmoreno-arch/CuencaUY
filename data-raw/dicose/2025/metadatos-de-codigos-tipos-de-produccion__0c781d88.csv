@@ -1,0 +1,3 @@
+ATRIBUTO;VARIABLE;DESCRIPCION ;ORIGEN;LIMITANTES CONOCIDAS;NOTAS
+TipoProduccionCodigo;TipoProduccionCodigo;Código del tipo de producción;Tabla de tipos de producción;;
+TipoProduccionDescripcion;TipoProduccionDescripcion;Descripción del tipo de producción;Tabla de tipos de producción;;

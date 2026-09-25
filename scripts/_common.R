@@ -45,8 +45,9 @@ base_request <- function(url, timeout = 120) {
 }
 
 get_json <- function(url, timeout = 60) {
+  # Algunos servicios (ArcGIS) devuelven JSON como text/plain.
   resp <- base_request(url, timeout) |> req_perform()
-  resp_body_json(resp, simplifyVector = FALSE)
+  fromJSON(resp_body_string(resp), simplifyVector = FALSE)
 }
 
 # Descarga con caché: si el archivo ya existe y no se pide `refresh`, no se vuelve
@@ -104,7 +105,8 @@ write_manifest <- function(rows) {
 
 # Nombre de archivo seguro y estable a partir del nombre del recurso.
 slugify <- function(x) {
-  x <- iconv(x, to = "ASCII//TRANSLIT")
+  x <- iconv(x, from = "UTF-8", to = "ASCII//TRANSLIT")
+  x <- gsub("['`^~\"]", "", x)
   x <- tolower(gsub("[^A-Za-z0-9]+", "-", x))
   gsub("(^-|-$)", "", x)
 }

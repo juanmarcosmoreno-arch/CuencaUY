@@ -11,8 +11,10 @@ source("scripts/_common.R")
 args    <- commandArgs(trailingOnly = TRUE)
 refresh <- "--refresh" %in% args
 
-estado_from_title <- function(title) {
-  t <- tolower(title)
+# El estado (preliminar/actualizado) figura en el título o, si no, en el
+# identificador del conjunto.
+estado_from_title <- function(title, name = "") {
+  t <- tolower(paste(title, name))
   dplyr::case_when(
     grepl("actualizad", t) ~ "actualizado",
     grepl("preliminar", t) ~ "preliminar",
@@ -58,7 +60,7 @@ for (i in seq_len(nrow(DICOSE_DATASETS))) {
   dir.create(pkg_dir, recursive = TRUE, showWarnings = FALSE)
   write_json(pkg, file.path(pkg_dir, "_ckan_package.json"), auto_unbox = TRUE,
              pretty = TRUE)
-  estado <- estado_from_title(pkg$title)
+  estado <- estado_from_title(pkg$title, pkg$name)
   msg("  ", pkg$title, " [", estado, "] — ", length(pkg$resources), " recursos")
 
   for (r in pkg$resources) {
