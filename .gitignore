@@ -1,0 +1,10 @@
+.Rproj.user/
+.Rhistory
+.RData
+.Ruserdata
+*.part
+renv/library/
+renv/local/
+renv/staging/
+renv/cellar/
+tests/screenshots/*.png
