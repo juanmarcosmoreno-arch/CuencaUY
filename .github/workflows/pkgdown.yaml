@@ -22,6 +22,9 @@ jobs:
     env:
       RENV_ACTIVATE_PROJECT: "FALSE"
       RENV_CONFIG_AUTOLOADER_ENABLED: "FALSE"
+      # Con el idioma C, pkgdown no traduce los textos de la página al español.
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
     steps:
       - uses: actions/checkout@v4
       - uses: r-lib/actions/setup-pandoc@v2

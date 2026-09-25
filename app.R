@@ -16,6 +16,9 @@ suppressPackageStartupMessages({
   library(ggplot2)
 })
 
+# Gráficas con ragg (misma tipografía en la computadora y en el servidor).
+options(shiny.useragg = requireNamespace("ragg", quietly = TRUE))
+
 for (f in list.files("R", pattern = "\\.R$", full.names = TRUE)) source(f, local = TRUE)
 
 # Carga única al iniciar el proceso (compartida por todas las sesiones) --------

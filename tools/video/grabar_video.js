@@ -1,4 +1,6 @@
-// Video de presentación del Atlas Lechero Uruguay (30 s, 30 fps, 1920 × 1080).
+// Videos de presentación de CuencaUY (30 fps, 1920 × 1080). Dos guiones:
+//   GUION=30 (por defecto): recorrido de 24 s → video de 30 s con el logo
+//   GUION=45: recorrido de 39 s que suma rodeo, clima y Tendencias → video de 45 s
 //
 // Renderizado determinista: el reloj de la página (performance.now, Date.now,
 // requestAnimationFrame, setTimeout/setInterval) se sustituye por uno que avanza
@@ -6,7 +8,7 @@
 // de la app salen fluidas aunque el WebGL por software sea lento.
 //
 // Requisitos: la app corriendo en APP_URL (por defecto http://127.0.0.1:3838),
-// Node con playwright. Uso: node tools/video/grabar_video.js <carpeta_cuadros>
+// Node con playwright. Uso: [GUION=45] node tools/video/grabar_video.js <carpeta_cuadros>
 
 const { chromium } = require('playwright');
 const fs = require('fs');
@@ -14,8 +16,9 @@ const path = require('path');
 
 const APP_URL = process.env.APP_URL || 'http://127.0.0.1:3838';
 const OUT = process.argv[2] || 'frames';
-// Recorrido de 24 s; tools/video/montar_video.sh le antepone la animación del logo (6 s).
-const FPS = 30, DURATION = 24, DT = 1000 / FPS;
+// tools/video/montar_video.sh le antepone la animación del logo (6 s).
+const FPS = 30, DT = 1000 / FPS;
+const GUION = process.env.GUION || '30';
 const VW = 1536, VH = 864, DPR = 1.25;           // → 1920 × 1080
 const AE_TARGET = { id: '0804006', lngLat: [-56.19734, -34.2405] };
 
@@ -104,30 +107,67 @@ const OVERLAY = `(() => {
 const ease = x => x < 0 ? 0 : x > 1 ? 1 : x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
 const fade = (t, a, b, dur = 0.45) => Math.min(ease((t - a) / dur), 1 - ease((t - (b - dur)) / dur));
 
-const CAPTIONS = [
+// Tramos comunes a ambos guiones (0–21 s): producción, línea temporal, áreas,
+// variación anual y detalle de una zona.
+const BASE_CAPTIONS = [
   { a: 0.2, b: 3.6, k: 'Ejercicio 2025', t: 'Producción de leche por departamento', s: 'La altura y el color muestran los litros declarados.' },
   { a: 3.8, b: 10.4, k: 'Línea temporal', t: 'Cinco ejercicios, 2021 → 2025', s: 'Declaraciones juradas DICOSE–SNIG del MGAP.' },
   { a: 10.6, b: 13.8, k: 'Más detalle', t: '637 áreas de enumeración', s: 'Escala de raíz cuadrada para leer todo el territorio.' },
   { a: 14.0, b: 17.2, k: 'Cambio anual', t: 'Dónde crece y dónde cae', s: 'Variación de la producción respecto al ejercicio anterior.' },
-  { a: 17.4, b: 20.8, k: 'Cada zona', t: 'Su serie histórica, con fuente', s: 'Valor, cambio anual y observaciones de método.' },
+  { a: 17.4, b: 20.8, k: 'Cada zona', t: 'Su serie histórica, con fuente', s: 'Valor, cambio anual y observaciones de método.', right: '392px' },
 ];
-
-// Movimientos del cursor: [inicio, fin, destino] y clics [tiempo, acción]
-function plan() {
-  return [
-    { at: 3.9, move: 0.6, to: { sel: '.tl-year[data-year="2021"]' }, click: `document.querySelector('.tl-year[data-year="2021"]').click()` },
-    { at: 4.8, move: 0.5, to: { sel: '#btn-play' }, click: `document.querySelector('#btn-play').click()` },
-    { at: 10.7, move: 0.6, to: { sel: 'label:has(input[name=level][value=ae])' }, click: `document.querySelector('input[name=level][value=ae]').click()` },
-    { at: 12.0, move: 0.5, to: { sel: 'label:has(input[name=transform][value=sqrt])' }, click: `document.querySelector('input[name=transform][value=sqrt]').click()` },
-    { at: 14.1, move: 0.6, to: { sel: 'label:has(input[name=mode][value=change])' }, click: `document.querySelector('input[name=mode][value=change]').click()` },
-    { at: 17.5, move: 0.8, to: { ll: AE_TARGET.lngLat }, click: `Shiny.setInputValue('atlas_select', {id: '${AE_TARGET.id}', level: 'ae', t: Date.now()}, {priority: 'event'})` },
-  ];
-}
-
-const CAMERA = [
+const BASE_MOVES = [
+  { at: 3.9, move: 0.6, to: { sel: '.tl-year[data-year="2021"]' }, click: `document.querySelector('.tl-year[data-year="2021"]').click()` },
+  { at: 4.8, move: 0.5, to: { sel: '#btn-play' }, click: `document.querySelector('#btn-play').click()` },
+  { at: 10.7, move: 0.6, to: { sel: 'label:has(input[name=level][value=ae])' }, click: `document.querySelector('input[name=level][value=ae]').click()` },
+  { at: 12.0, move: 0.5, to: { sel: 'label:has(input[name=transform][value=sqrt])' }, click: `document.querySelector('input[name=transform][value=sqrt]').click()` },
+  { at: 14.1, move: 0.6, to: { sel: 'label:has(input[name=mode][value=change])' }, click: `document.querySelector('input[name=mode][value=change]').click()` },
+  { at: 17.5, move: 0.8, to: { ll: AE_TARGET.lngLat }, click: `Shiny.setInputValue('atlas_select', {id: '${AE_TARGET.id}', level: 'ae', t: Date.now()}, {priority: 'event'})` },
+];
+const BASE_CAMERA = [
   { at: 0.1, js: `HTMLWidgets.find('#map').getMap().easeTo({bearing: -26, pitch: 50, duration: 3600, easing: t => t < .5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2})` },
   { at: 14.9, js: `HTMLWidgets.find('#map').getMap().easeTo({bearing: -10, pitch: 48, duration: 2200})` },
 ];
+
+const GUIONES = {
+  '30': { duration: 24, captions: BASE_CAPTIONS, moves: BASE_MOVES, camera: BASE_CAMERA, cursor: [3.7, 20.9], outro: 21.0 },
+  '45': {
+    duration: 39,
+    captions: [
+      ...BASE_CAPTIONS,
+      { a: 21.2, b: 24.6, k: 'Rodeo y tambos', t: 'Litros por vaca', s: 'Vacas, productividad y tambos lecheros, también por área.' },
+      { a: 24.8, b: 28.0, k: 'Clima', t: 'La sequía de 2022–23', s: 'Lluvia frente a lo normal (CHIRPS); la altura sigue siendo la leche.' },
+      { a: 28.2, b: 32.4, k: 'Tendencias', t: 'La leche mes a mes', s: 'Una línea por año, con el valor exacto al pasar el cursor.' },
+      { a: 32.6, b: 35.6, k: 'Tendencias', t: 'Precio, rodeo y clima', s: 'Gráficas interactivas con datos públicos, descargables en CSV.' },
+    ],
+    moves: [
+      ...BASE_MOVES,
+      { at: 21.1, move: 0.5, to: { sel: '#btn-close-detail' }, click: `document.querySelector('#btn-close-detail').click()` },
+      { at: 21.8, move: 0.5, to: { sel: 'label:has(input[name=mode][value=value])' }, click: `document.querySelector('input[name=mode][value=value]').click()` },
+      { at: 22.5, move: 0.6, to: { sel: 'label:has(input[name=indicator][value=lpv])' }, click: `document.querySelector('input[name=indicator][value=lpv]').click()` },
+      { at: 24.8, move: 0.6, to: { sel: 'label:has(input[name=indicator][value=lluvia])' }, click: `document.querySelector('input[name=indicator][value=lluvia]').click()` },
+      { at: 25.8, move: 0.6, to: { sel: '.tl-year[data-year="2023"]' }, click: `document.querySelector('.tl-year[data-year="2023"]').click()` },
+      { at: 28.1, move: 0.7, to: { sel: '#btn-tendencias' }, click: `document.querySelector('#btn-tendencias').click()` },
+      // Sobre la línea de 2026 (el mouse real también se mueve para que Shiny muestre el tooltip).
+      { at: 30.0, move: 0.9, real: true, to: { plot: [0.545, 0.2] }, click: "" },
+      { at: 32.7, move: 0.6, to: { sel: '#tv_view label:has(input[value=precio])' }, click: `document.querySelector('#tv_view input[value=precio]').click()` },
+      { at: 34.3, move: 0.5, to: { sel: '#tv_view label:has(input[value=clima])' }, click: `document.querySelector('#tv_view input[value=clima]').click()` },
+    ],
+    camera: [
+      ...BASE_CAMERA,
+      { at: 21.3, js: `HTMLWidgets.find('#map').getMap().easeTo({bearing: -18, pitch: 50, zoom: HTMLWidgets.find('#map').getMap().getZoom() - 0.35, duration: 3000})` },
+    ],
+    cursor: [3.7, 35.4], outro: 35.8,
+    outroSub: '637 áreas · 19 departamentos · rodeo, clima y tendencias',
+    outroMeta: 'Datos abiertos: <b>MGAP (DICOSE–SNIG)</b>, <b>INALE</b> y <b>CHIRPS</b> &nbsp;·&nbsp; Hecho con R, Shiny y MapLibre',
+    // La ventana de Tendencias se corre a la izquierda para dejar lugar al rótulo.
+    css: `.modal-xl { max-width: 1010px !important; margin-left: 36px !important; } #v-cap { top: 360px; }`,
+  },
+};
+const G = GUIONES[GUION];
+if (!G) throw new Error('GUION desconocido: ' + GUION);
+const DURATION = G.duration, CAPTIONS = G.captions, CAMERA = G.camera;
+const plan = () => G.moves.map(m => ({ ...m }));
 
 (async () => {
   fs.mkdirSync(OUT, { recursive: true });
@@ -140,6 +180,11 @@ const CAMERA = [
   await page.waitForTimeout(6000);                     // carga del mapa base y datos
   await page.evaluate(() => { const i = document.getElementById('intro'); if (i) i.remove(); });   // la intro de la app se monta aparte
   await page.evaluate(OVERLAY);
+  if (G.outroSub) await page.evaluate(g => {
+    document.querySelector('#v-outro .v-sub').textContent = g.outroSub;
+    document.querySelector('#v-outro .v-meta').innerHTML = g.outroMeta;
+  }, { outroSub: G.outroSub, outroMeta: G.outroMeta });
+  if (G.css) await page.evaluate(css => { const st = document.createElement('style'); st.textContent = css; document.head.appendChild(st); }, G.css);
   await page.waitForTimeout(500);
   const cdp = await ctx.newCDPSession(page);
   await cdp.send('Animation.enable');
@@ -167,20 +212,23 @@ const CAMERA = [
       if (t >= m.at && t < m.at + m.move && (cur !== i)) {
         cur = i; from = cursor.slice();
         m.dest = m.to.sel ? await page.evaluate(s => window.__ov.center(s), m.to.sel)
-                          : await page.evaluate(ll => window.__ov.project(ll), m.to.ll);
+               : m.to.plot ? await page.evaluate(f => { const r = document.querySelector('#tv_plot img').getBoundingClientRect(); return [r.left + r.width * f[0], r.top + r.height * f[1]]; }, m.to.plot)
+               : await page.evaluate(ll => window.__ov.project(ll), m.to.ll);
       }
       if (cur === i && t < m.at + m.move) {
         const k = ease((t - m.at) / m.move);
         cursor = [from[0] + (m.dest[0] - from[0]) * k, from[1] + (m.dest[1] - from[1]) * k];
+        if (m.real) await page.mouse.move(cursor[0], cursor[1]);
       }
       if (t >= m.at + m.move + 0.1 && !clicked.has(i)) {
-        clicked.add(i); cursor = m.dest.slice(); m.clickAt = t;
-        await page.evaluate(m.click);
+        clicked.add(i); cursor = m.dest.slice();
+        if (m.real) await page.mouse.move(cursor[0] + 1, cursor[1]);
+        if (m.click) { m.clickAt = t; await page.evaluate(m.click); }
       }
     }
     const lastClick = Math.max(...moves.map(m => (m.clickAt !== undefined && t - m.clickAt < 0.5) ? m.clickAt : -9));
     const rp = lastClick > 0 ? (t - lastClick) / 0.5 : 1;
-    const cursorOpacity = (t > 3.7 && t < 20.9) ? Math.min(1, (t - 3.7) / 0.3) : 0;
+    const cursorOpacity = (t > G.cursor[0] && t < G.cursor[1]) ? Math.min(1, (t - G.cursor[0]) / 0.3) : 0;
 
     // Rótulos
     let ci = CAPTIONS.findIndex(c => t >= c.a && t < c.b);
@@ -198,8 +246,8 @@ const CAMERA = [
       o.set('v-ripple', 'left', s.x + 'px'); o.set('v-ripple', 'top', s.y + 'px');
       o.set('v-ripple', 'opacity', s.rp < 1 ? (1 - s.rp) * 0.9 : 0);
       o.set('v-ripple', 'transform', `scale(${0.4 + s.rp * 0.9})`);
-    }, { intro: 0, outro: ease((t - 21.0) / 0.6), cap: capOp, capY,
-         capRight: ci === 4 ? '392px' : '28px', cur: cursorOpacity, x: cursor[0], y: cursor[1], rp });
+    }, { intro: 0, outro: ease((t - G.outro) / 0.6), cap: capOp, capY,
+         capRight: (ci >= 0 && CAPTIONS[ci].right) || '28px', cur: cursorOpacity, x: cursor[0], y: cursor[1], rp });
 
     const shot = await cdp.send('Page.captureScreenshot', { format: 'jpeg', quality: 93 });
     fs.writeFileSync(path.join(OUT, `f${String(f).padStart(4, '0')}.jpg`), Buffer.from(shot.data, 'base64'));

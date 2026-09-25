@@ -46,6 +46,20 @@ Rscript scripts/run_pipeline.R --refresh  # fuerza la nueva descarga
 
 El pipeline descarga DICOSE, las series de INALE (remisión, precio al productor e IPC; `scripts/01b_download_inale.R` busca en la página de estadísticas las URL de cada mes) y la cartografía, siempre con caché, tiempo máximo y reintentos. Registra cada archivo en `data-raw/manifest.csv` (URL, fecha de descarga, ejercicio, estado preliminar o actualizado, MD5), valida los datos y regenera `data/`. Para incorporar un ejercicio nuevo (2026), añada su identificador del catálogo a `DICOSE_DATASETS` en `scripts/_common.R`.
 
+### Publicar la app en shinyapps.io
+
+Una sola vez, conectá la cuenta:
+1. En shinyapps.io andá a **Account → Tokens → Show → Show secret**.
+2. Copiá el comando `rsconnect::setAccountInfo(...)` y ejecutalo en la consola de R. El secreto queda guardado solo en tu computadora.
+
+Después, desde la carpeta del proyecto:
+
+```sh
+Rscript tools/deploy/shinyapps.R      # → https://<cuenta>.shinyapps.io/cuencauy/
+```
+
+El script sube solo lo que la app necesita: `app.R`, `R/`, `www/`, los datos procesados de `data/` y la tipografía, en total unos 2 MB. Para actualizar la app, se vuelve a correr el mismo comando.
+
 ### Página web (pkgdown)
 
 ```sh
@@ -149,12 +163,17 @@ Rscript scripts/05_graficas.R        # → docs/graficas/*.png (1080 × 1080) y 
 
 DICOSE no publica producción mensual. Las series mensuales son **remisión a planta** (INALE), que equivale a ≈ 91–95 % de la producción, y así se rotulan.
 
-El video de presentación (≈ 30 s, 1920 × 1080, H.264) se genera con la app corriendo en `http://127.0.0.1:3838`. Empieza con la animación del logo (6 s) y sigue con un recorrido de 24 s:
+Hay dos videos de presentación (1920 × 1080, H.264), que se generan con la app corriendo en `http://127.0.0.1:3838`. Los dos empiezan con la animación del logo (6 s):
+
+- `docs/video/cuencauy-30s.mp4`: recorrido de 24 s por el mapa, la línea temporal, las áreas, la variación anual y el detalle de una zona.
+- `docs/video/cuencauy-45s.mp4`: el mismo recorrido, más litros por vaca, clima (la sequía de 2022–23) y la sección Tendencias. Se graba con `GUION=45`.
 
 ```sh
 npm install playwright        # una vez; requiere Chromium de Playwright y ffmpeg
-node tools/video/grabar_video.js cuadros/
+node tools/video/grabar_video.js cuadros/                    # 30 s
 tools/video/montar_video.sh cuadros/ docs/video/cuencauy-30s.mp4
+GUION=45 node tools/video/grabar_video.js cuadros45/        # 45 s
+tools/video/montar_video.sh cuadros45/ docs/video/cuencauy-45s.mp4
 ```
 
 El guion sustituye el reloj de la página por uno que avanza 1/30 s por cuadro. Así las animaciones salen fluidas aunque el equipo renderice WebGL lentamente.

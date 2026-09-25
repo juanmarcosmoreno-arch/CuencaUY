@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Monta el video de difusión: animación del logo (6 s) + recorrido de la app (24 s),
+# Monta el video de difusión: animación del logo (6 s) + recorrido de la app (24 s o 39 s),
 # con un fundido de 0,4 s entre ambos. Uso: tools/video/montar_video.sh <carpeta_cuadros> <salida.mp4>
 set -euo pipefail
 FRAMES="${1:?carpeta de cuadros}"; OUT="${2:-docs/video/cuencauy-30s.mp4}"
