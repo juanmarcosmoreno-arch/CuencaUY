@@ -1,8 +1,8 @@
-# Atlas Lechero Uruguay
+# CuencaUY · La lechería uruguaya en el mapa
 
-**La producción de leche, territorio por territorio.**
+![CuencaUY](www/brand/cuencauy-logo.png)
 
-Atlas digital en R/Shiny que muestra cómo cambia la geografía de la lechería uruguaya entre los ejercicios 2021 y 2025. Usa un mapa 3D en WebGL (mapgl + MapLibre) con los polígonos oficiales elevados según la magnitud del indicador. Los datos provienen de las declaraciones juradas DICOSE–SNIG del MGAP.
+CuencaUY (antes «Atlas Lechero Uruguay») es un atlas digital en R/Shiny que muestra cómo cambia la geografía de la lechería uruguaya entre los ejercicios 2021 y 2025. Usa un mapa 3D en WebGL (mapgl + MapLibre) con los polígonos oficiales elevados según la magnitud del indicador. Los datos provienen de las declaraciones juradas DICOSE–SNIG del MGAP.
 
 ![Vista de escritorio: producción 2025 por departamento](docs/capturas/escritorio.png)
 
@@ -99,6 +99,10 @@ Cada indicador se puede ver como **magnitud** o como **variación anual**. La va
 - **Departamentos:** capa «Límites Departamentales» del MGAP (SNIA). El recurso del catálogo indicado inicialmente (`3c1b430a…`) responde 404 y queda registrado en el manifiesto. Se excluye el polígono «Límite contestado».
 - **Superficies:** las AE no cubren la zona urbana de Montevideo (−30 % de superficie) ni los embalses del río Negro (≤ 6 % en Durazno, Tacuarembó y Río Negro).
 
+## Marca y presentación
+
+Al abrir la app se reproducen los primeros 6 s de la animación del logo (`www/intro/`, WebM VP9 con respaldo MP4 H.264, sin audio). Se puede saltar con el botón, un clic o las teclas Esc, Enter o espacio. Con «reducir movimiento» activado en el sistema, se muestra el logo fijo 1,5 s. Si el video no se puede reproducir, la app aparece igual a los 2,5 s. Logo, favicon e ícono están en `www/brand/`, y la guía de marca en `docs/marca/`.
+
 ## Gráficas y video para difusión
 
 ```sh
@@ -114,12 +118,12 @@ Rscript scripts/05_graficas.R        # → docs/graficas/*.png (1080 × 1080) y 
 
 DICOSE no publica producción mensual. Las series mensuales son **remisión a planta** (INALE), que equivale a ≈ 91–95 % de la producción, y así se rotulan.
 
-El video de presentación (30 s, 1920 × 1080, H.264) se genera con la app corriendo en `http://127.0.0.1:3838`:
+El video de presentación (≈ 30 s, 1920 × 1080, H.264) se genera con la app corriendo en `http://127.0.0.1:3838`. Empieza con la animación del logo (6 s) y sigue con un recorrido de 24 s:
 
 ```sh
 npm install playwright        # una vez; requiere Chromium de Playwright y ffmpeg
 node tools/video/grabar_video.js cuadros/
-ffmpeg -framerate 30 -i cuadros/f%04d.jpg -c:v libx264 -pix_fmt yuv420p -crf 18 -preset slow -movflags +faststart docs/video/atlas-lechero-30s.mp4
+tools/video/montar_video.sh cuadros/ docs/video/cuencauy-30s.mp4
 ```
 
 El guion sustituye el reloj de la página por uno que avanza 1/30 s por cuadro. Así las animaciones salen fluidas aunque el equipo renderice WebGL lentamente.

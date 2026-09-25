@@ -1,4 +1,4 @@
-# Atlas Lechero Uruguay — aplicación Shiny
+# CuencaUY · La lechería uruguaya en el mapa — aplicación Shiny
 #
 # Ejecutar desde la raíz del proyecto:
 #   RStudio:  abrir app.R y pulsar «Run App»

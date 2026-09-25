@@ -1,4 +1,4 @@
-/* Atlas Lechero Uruguay — comportamiento del cliente
+/* CuencaUY (Atlas Lechero Uruguay) — comportamiento del cliente
  *
  * El widget de mapgl se construye una sola vez. Este script trabaja sobre la
  * instancia de MapLibre del widget para: cámara (zoom, volver a Uruguay, 2D/3D),
@@ -427,6 +427,8 @@
     }
 
     document.addEventListener("keydown", function (e) {
+      var intro = document.getElementById("intro");
+      if (intro && !intro.classList.contains("is-done")) return;   // la intro maneja sus teclas
       var tag = (e.target.tagName || "").toLowerCase();
       if (tag === "input" && e.target.type !== "radio" || tag === "textarea" || document.querySelector(".modal.show")) return;
       if (e.target.type === "radio" && (e.key === "ArrowLeft" || e.key === "ArrowRight")) return;
@@ -442,7 +444,45 @@
     if (isMobile()) toggleSheet(false);
   }
 
+  /* Presentación inicial: 6 s de animación del logo, luego la app. */
+  var INTRO_SECONDS = 6;
+  function runIntro() {
+    var box = document.getElementById("intro"), v = document.getElementById("intro-video");
+    if (!box) return;
+    var done = false;
+    function finish() {
+      if (done) return;
+      done = true;
+      box.classList.add("is-done");
+      try { v.pause(); } catch (e) { /* sin video */ }
+      setTimeout(function () { if (box.parentNode) box.parentNode.removeChild(box); }, 700);
+      if (S.map) S.map.resize();
+    }
+    document.getElementById("intro-skip").addEventListener("click", finish);
+    box.addEventListener("click", function (e) { if (e.target !== document.getElementById("intro-skip")) finish(); });
+    document.addEventListener("keydown", function k(e) {
+      if (!done && (e.key === "Escape" || e.key === "Enter" || e.key === " ")) { e.preventDefault(); finish(); }
+      if (done) document.removeEventListener("keydown", k);
+    });
+    // Con «reducir movimiento» se muestra el logo fijo (póster) un instante.
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setTimeout(finish, 1500); return;
+    }
+    v.muted = true;
+    v.addEventListener("timeupdate", function () { if (v.currentTime >= INTRO_SECONDS - 0.05) finish(); });
+    v.addEventListener("ended", finish);
+    v.addEventListener("error", function () { setTimeout(finish, 1500); });
+    var p = v.play();
+    if (p && p.catch) p.catch(function () { setTimeout(finish, 1800); });   // reproducción bloqueada
+    // Ningún formato decodificable o red lenta: si el video no avanza, se sigue a la app.
+    var srcs = v.querySelectorAll("source");
+    if (srcs.length) srcs[srcs.length - 1].addEventListener("error", function () { setTimeout(finish, 1200); });
+    setTimeout(function () { if (v.currentTime < 0.1) finish(); }, 2500);
+    setTimeout(finish, (INTRO_SECONDS + 2) * 1000);                           // salvaguarda
+  }
+
   document.addEventListener("DOMContentLoaded", function () {
+    runIntro();
     if (window.Shiny && Shiny.addCustomMessageHandler) bindShiny();
     bindUi();
     waitForMap();

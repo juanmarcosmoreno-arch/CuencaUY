@@ -28,27 +28,32 @@ radio_group <- function(id, choices, selected, class = "segmented", label = NULL
           `aria-labelledby` = if (!is.null(label)) paste0(id, "-label"), items))
 }
 
-brand_mark <- function() {
-  # Marca: barras que crecen sobre una línea de horizonte (altura = magnitud).
-  HTML('<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
-    <path d="M4 19.5h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
-    <rect x="5.5" y="12" width="3" height="6" rx="0.8" fill="currentColor" opacity=".55"/>
-    <rect x="10.5" y="6.5" width="3" height="11.5" rx="0.8" fill="currentColor"/>
-    <rect x="15.5" y="9.5" width="3" height="8.5" rx="0.8" fill="currentColor" opacity=".8"/>
-  </svg>')
-}
-
+# Marca CuencaUY: logo oficial (www/brand/). El lema va como texto para que sea
+# legible a la altura del encabezado.
 atlas_header <- function() {
   tags$header(class = "atlas-header",
     div(class = "brand",
-        div(class = "brand-mark", brand_mark()),
-        div(class = "brand-text",
-            h1(class = "brand-title", "Atlas Lechero Uruguay"),
-            p(class = "brand-sub", "La producción de leche, territorio por territorio"))),
+        h1(class = "brand-title",
+           tags$img(src = "brand/cuencauy-logo-encabezado.png", alt = "CuencaUY",
+                    class = "brand-logo", width = 159, height = 40)),
+        span(class = "brand-divider", `aria-hidden` = "true"),
+        p(class = "brand-sub", "La lechería uruguaya en el mapa")),
     div(class = "header-meta",
         tags$button(type = "button", class = "btn-ghost", id = "btn-about",
                     icon("info"), span(class = "label", "Fuentes y método")))
   )
+}
+
+# Presentación inicial: los primeros 6 s de la animación del logo. Silenciada
+# (los navegadores bloquean la reproducción automática con sonido), se puede
+# saltar y, con «reducir movimiento», se muestra el logo fijo.
+intro_overlay <- function() {
+  div(id = "intro", class = "intro", role = "dialog", `aria-label` = "Presentación de CuencaUY",
+      tags$video(id = "intro-video", class = "intro-video", muted = NA, playsinline = NA,
+                 preload = "auto", poster = "intro/cuencauy-intro-final.jpg", `aria-hidden` = "true",
+                 tags$source(src = "intro/cuencauy-intro.webm", type = "video/webm"),
+                 tags$source(src = "intro/cuencauy-intro.mp4", type = "video/mp4")),
+      tags$button(type = "button", id = "intro-skip", class = "intro-skip", "Saltar"))
 }
 
 controls_panel <- function(atlas) {
@@ -166,7 +171,7 @@ empty_state <- function() {
 
 atlas_ui <- function(atlas) {
   page_fillable(
-    title = "Atlas Lechero Uruguay",
+    title = "CuencaUY · La lechería uruguaya en el mapa",
     padding = 0, gap = 0,
     theme = bs_theme(
       version = 5, bg = "#F5F3EE", fg = "#172B2A", primary = "#176B60",
@@ -176,7 +181,9 @@ atlas_ui <- function(atlas) {
     ),
     tags$head(
       tags$meta(name = "viewport", content = "width=device-width, initial-scale=1, viewport-fit=cover"),
-      tags$meta(name = "description", content = "Atlas interactivo de la producción de leche en Uruguay por departamento y área de enumeración, a partir de las declaraciones juradas DICOSE–SNIG del MGAP."),
+      tags$meta(name = "description", content = "CuencaUY: la lechería uruguaya en el mapa. Producción de leche, rodeo, tambos y clima por departamento y área de enumeración, a partir de las declaraciones juradas DICOSE–SNIG del MGAP."),
+      tags$link(rel = "icon", type = "image/png", sizes = "32x32", href = "brand/favicon-32.png"),
+      tags$link(rel = "apple-touch-icon", href = "brand/apple-touch-icon.png"),
       tags$meta(name = "theme-color", content = "#FFFFFF"),
       tags$link(rel = "preload", href = "fonts/inter-latin-wght-normal.woff2", as = "font",
                 type = "font/woff2", crossorigin = NA),
@@ -206,6 +213,7 @@ atlas_ui <- function(atlas) {
           div(class = "map-wrap", maplibreOutput("map", height = "100%"))
         )),
       if (!is.null(atlas)) timeline(atlas)
-    )
+    ),
+    intro_overlay()
   )
 }
