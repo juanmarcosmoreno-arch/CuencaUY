@@ -1,0 +1,5 @@
+ATRIBUTO;XML;DESCRIPCION ;ORIGEN;LIMITANTES CONOCIDAS;NOTAS
+CategoriaCodigo;CategoriaCodigo;C¢digo de la categor¡a;Tabla de categorias;;
+CategoriaDescripcion;CategoriaDescripcion;Descripci¢n de la categor¡a;Tabla de categorias;;
+PonderacionUG;CategoriaPonderacionUG;Ponderaci¢n para calcular las unidades ganaderas;Tabla de categorias;;
+Especie;EspecieCodigo;C¢digo de la especie;Tabla de categorias;;Cuenta con una tabla de c¢digos ?Especies?

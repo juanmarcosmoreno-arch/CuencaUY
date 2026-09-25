@@ -1,0 +1,16 @@
+---
+title: "Marca"
+description: "Logo, hexágono y colores de CuencaUY."
+---
+
+<img src="../docs/marca/cuencauy-hex-520.png" align="right" width="200" alt="Hexágono de CuencaUY" />
+
+El hexágono sigue el formato de los stickers de R (2 × 2,31 pulgadas): el símbolo del logo oficial, el nombre y el lema, con los colores de la app. Se genera con `python3 tools/hex/hexagono.py`.
+
+- [Hexágono en alta resolución (1040 × 1200)](../docs/marca/cuencauy-hex.png)
+- [Logo oficial con fondo transparente](../docs/marca/cuencauy-logo-oficial-transparente.png)
+
+```{r, echo = FALSE, results = "asis"}
+x <- readLines(file.path("..", "..", "docs", "marca", "README.md"), encoding = "UTF-8")
+cat(x[-1], sep = "\n")
+```

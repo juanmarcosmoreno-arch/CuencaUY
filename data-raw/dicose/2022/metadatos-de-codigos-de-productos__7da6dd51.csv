@@ -1,0 +1,3 @@
+ATRIBUTO;XML;DESCRIPCION ;ORIGEN;LIMITANTES CONOCIDAS;NOTAS
+ProductoCodigo;ProductoCodigo;Código del tipo de producción en establecimiento;Tabla de tipos de producción en establecimiento;;
+ProductoDescripcion;ProductoDescripcion;Descripción del tipo de producción en establecimiento;Tabla de tipos de producción en establecimiento;;

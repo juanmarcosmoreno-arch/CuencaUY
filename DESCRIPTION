@@ -1,0 +1,32 @@
+Package: cuencauy
+Type: project
+Title: CuencaUY, la lechería uruguaya en el mapa
+Version: 0.1.0
+Authors@R: person("Juan Marcos", "Moreno", role = c("aut", "cre"))
+Encoding: UTF-8
+URL: https://juanmarcosmoreno-arch.github.io/CuencaUY/, https://github.com/juanmarcosmoreno-arch/CuencaUY
+BugReports: https://github.com/juanmarcosmoreno-arch/CuencaUY/issues
+Description: Atlas digital de la producción de leche en Uruguay a partir de las
+    declaraciones juradas DICOSE-SNIG (MGAP), con mapa 3D en Shiny y mapgl.
+Depends:
+    R (>= 4.3)
+Imports:
+    shiny,
+    bslib,
+    mapgl,
+    sf,
+    dplyr,
+    tidyr,
+    readr,
+    readxl,
+    httr2,
+    jsonlite,
+    ggplot2,
+    rmapshaper,
+    geojsonsf,
+    terra
+Suggests:
+    testthat,
+    renv,
+    ragg,
+    systemfonts

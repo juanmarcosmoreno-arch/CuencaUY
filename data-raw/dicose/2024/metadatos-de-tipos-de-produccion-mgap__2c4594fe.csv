@@ -1,0 +1,3 @@
+ATRIBUTO;VARIABLE;DESCRIPCION ;ORIGEN;LIMITANTES CONOCIDAS;NOTAS
+TipoProduccionMGAPCodigo;TipoProduccionMGAPCodigo;Código del tipo de producción;Tabla de tipos de producción MGAP;;
+TipoProduccionMGAPDescripcion;TipoProduccionMGAPDescripcion;Descripción del tipo de producción;Tabla de tipos de producción MGAP;;

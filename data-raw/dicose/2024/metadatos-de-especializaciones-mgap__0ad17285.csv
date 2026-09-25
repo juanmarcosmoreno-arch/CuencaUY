@@ -1,0 +1,3 @@
+ATRIBUTO;VARIABLE;DESCRIPCION ;ORIGEN;LIMITANTES CONOCIDAS;NOTAS
+EspecializacionMGAPCodigo;EspecializacionMGAPCodigo;Código de especialización;Tabla de especializaciones MGAP;;
+EspecializacionMGAPDescripcion;EspecializacionMGAPDescripcion;Descripción de la especialización;Tabla de especializaciones MGAP;;

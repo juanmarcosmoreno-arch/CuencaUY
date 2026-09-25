@@ -1,0 +1,3 @@
+ATRIBUTO;VARIABLE;DESCRIPCION ;ORIGEN;LIMITANTES CONOCIDAS;NOTAS
+ActividadCodigo;ActividadCodigo;C¢digo de la actividad;Tabla de actividades;;
+ActividadDescripcion;ActividadDescripcion;Descripci¢n de la actividad;Tabla de actividades;;

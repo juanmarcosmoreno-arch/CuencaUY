@@ -1,0 +1,8 @@
+ns1:TipoProduccionCodigo;ns1:TipoProduccionDescripcion
+1;Venta de LECHE CUOTA o de reparto propio
+2;Venta de leche industria:
+3;Industrialización en el establecimiento:
+4;Consumo humano en el establecimiento:
+5;Consumo animal en el establecimiento:
+10;Venta de LECHE
+11;Otros destinos

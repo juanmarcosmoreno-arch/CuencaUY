@@ -1,0 +1,54 @@
+---
+title: "Gráficas"
+description: "Remisión mensual, año lechero, rodeo, departamentos, precio y clima."
+---
+
+Estas son las versiones para difundir (1080 × 1080) de las gráficas que la app muestra de forma interactiva en **Tendencias**. Cada una tiene su tabla CSV al lado. Se regeneran con `Rscript scripts/05_graficas.R`.
+
+DICOSE (MGAP) publica la producción por ejercicio, no por mes. Las series mensuales son la **remisión a planta** de INALE, que equivale a ≈ 91–95 % de lo producido.
+
+## La leche que llega a planta, mes a mes
+
+![Remisión mensual por año](../docs/graficas/remision-mensual-por-anio.png)
+
+[Datos (CSV)](../docs/graficas/remision-mensual-por-anio.csv)
+
+## El año lechero, de julio a junio
+
+![Remisión por ejercicio](../docs/graficas/remision-por-ejercicio.png)
+
+[Datos (CSV)](../docs/graficas/remision-por-ejercicio.csv)
+
+## Rodeo y tambos
+
+![Rodeo y tambos](../docs/graficas/rodeo-y-tambos.png)
+
+[Datos (CSV)](../docs/graficas/rodeo-y-tambos.csv)
+
+## Departamentos
+
+![Variación por departamento](../docs/graficas/variacion-departamentos.png)
+
+[Datos (CSV)](../docs/graficas/variacion-departamentos.csv)
+
+## Precio de la leche
+
+![Precio y remisión](../docs/graficas/precio-y-remision.png)
+
+[Datos (CSV)](../docs/graficas/precio-y-remision.csv)
+
+## Clima
+
+![Lluvia y remisión](../docs/graficas/clima-lluvia-y-remision.png)
+
+[Datos (CSV)](../docs/graficas/clima-lluvia-y-remision.csv)
+
+![Panel de áreas](../docs/graficas/clima-panel-areas.png)
+
+[Datos (CSV)](../docs/graficas/clima-panel-areas.csv)
+
+## Video
+
+<video controls muted playsinline width="100%" poster="../docs/capturas/escritorio.png">
+  <source src="../docs/video/cuencauy-30s.mp4" type="video/mp4">
+</video>
