@@ -7,10 +7,14 @@ PAL_DIV  <- c("#9A4B2A", "#C8845D", "#E8C7AC", "#F2EFE8", "#A8D2CE", "#57A3A1", 
 COL_ZERO <- "#E4E1D8"   # sin producción declarada
 COL_NOBASE <- "#B9B3C9" # anterior = 0: sin base de comparación
 COL_NOPREV <- "#D5DAD6" # sin ejercicio anterior publicado
+COL_MISSING <- "#C9CCC8" # sin dato en el ejercicio (no es cero)
 COL_SEL  <- "#0B2F2C"   # zona seleccionada
 H_MAX    <- 65000       # altura máxima (m) de la extrusión estadística
 
-STATUS_CODE <- c(ok = 0L, sin_base = 1L, sin_produccion = 2L, sin_anterior = 3L)
+STATUS_CODE <- c(ok = 0L, sin_base = 1L, sin_produccion = 2L, sin_anterior = 3L, sin_dato = 4L)
+
+# Orden y grupos del panel de indicadores.
+INDICATOR_ORDER <- c("prod", "venta", "dens", "vacas", "lpv", "tambos", "rem", "lluvia", "thi")
 
 load_atlas <- function(path = file.path("data", "atlas.rds")) {
   if (!file.exists(path)) return(NULL)
@@ -58,7 +62,8 @@ ZOOM_FACTOR <- list(c(6.5, 1), c(8, 0.42), c(10, 0.13), c(12, 0.045))
 
 height_expr <- function(ind, year, max, transform = "linear", dim = "3d") {
   if (dim == "2d") return(0)
-  v <- list("to-number", list("get", prop_name(ind, year)), 0)
+  # Acotada al máximo de la escala (indicadores con valores extremos, p. ej. L/vaca).
+  v <- list("min", list("to-number", list("get", prop_name(ind, year)), 0), max)
   base <- if (transform == "sqrt") {
     list("*", list("sqrt", v), H_MAX / sqrt(max))
   } else {
@@ -103,7 +108,11 @@ color_expr <- function(ind, year, max, mode = "value", transform = "linear",
                  list("to-number", list("get", prop_name(ind, year, "_c")), 0))
     for (i in seq_along(d)) ramp <- c(ramp, list(d[i], PAL_DIV[i]))
     e <- list("match", list("to-number", list("get", prop_name(ind, year, "_s")), 3),
-              0, ramp, 1, COL_NOBASE, 2, COL_ZERO, COL_NOPREV)
+              0, ramp, 1, COL_NOBASE, 2, COL_ZERO, 4, COL_MISSING, COL_NOPREV)
+  }
+  # Valor ausente (null) ≠ cero: color propio. `match` sobre el tipo, no `case`.
+  if (!(mode == "change" && !is_climate(ind))) {
+    e <- list("match", list("typeof", list("get", prop_name(ind, year))), "number", e, COL_MISSING)
   }
   # La selección usa `match` en el nivel superior: mapgl reinterpreta un `case`
   # de primer nivel como estado de hover al actualizar por proxy.
@@ -157,6 +166,14 @@ add_climate <- function(atlas, path = file.path("data", "clima.rds")) {
     unit = "días con THI medio ≥ 72", unit_short = "días", big = 1, big_unit = "días en el ejercicio",
     desc = sprintf("Días del ejercicio con índice de temperatura y humedad medio ≥ %d, umbral habitual de estrés en vacas lecheras (NASA POWER, celdas de ~55 km). El color muestra el estrés; la altura, la producción.", cl$thi_umbral))
   atlas$clima <- cl
+  atlas
+}
+
+# Reordena los indicadores según INDICATOR_ORDER (los ausentes se omiten).
+order_indicators <- function(atlas) {
+  if (is.null(atlas)) return(atlas)
+  keep <- intersect(INDICATOR_ORDER, names(atlas$indicators))
+  atlas$indicators <- atlas$indicators[c(keep, setdiff(names(atlas$indicators), keep))]
   atlas
 }
 

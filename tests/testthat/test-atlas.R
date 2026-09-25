@@ -46,6 +46,11 @@ test_that("las capas del mapa tienen una columna por indicador y ejercicio", {
 
 test_that("las expresiones de estilo son válidas y usan escala fija", {
   e <- color_expr("prod", 2024, 8e8)
+  # Nivel superior: `match` por tipo (número vs. dato ausente); dentro, la rampa.
+  expect_equal(e[[1]], "match")
+  expect_equal(e[[2]][[1]], "typeof")
+  expect_equal(e[[5]], COL_MISSING)
+  e <- e[[4]]
   expect_equal(e[[1]], "interpolate")
   stops <- unlist(e[seq(4, length(e), 2)])
   expect_true(all(diff(stops) > 0))
@@ -59,6 +64,7 @@ test_that("las expresiones de estilo son válidas y usan escala fija", {
   expect_equal(h[[1]], "interpolate")
   expect_equal(h[[3]], list("zoom"))
   expect_equal(h[[5]][[2]][[2]][[1]], "sqrt")
+  expect_equal(h[[5]][[2]][[2]][[2]][[1]], "min")   # acotada al máximo de la escala
   # misma escala para todos los años: solo cambia la propiedad leída
   h21 <- height_expr("prod", 2021, 8e8); h25 <- height_expr("prod", 2025, 8e8)
   expect_identical(h21[[5]][[2]][[3]], h25[[5]][[2]][[3]])
@@ -88,6 +94,22 @@ test_that("el servidor responde a año, indicador y selección", {
 })
 
 
+test_that("rodeo y tambos: sin dato ≠ cero, y umbral de vacas", {
+  v <- atlas$values$ae
+  expect_true(all(is.na(v$tambos[v$ejercicio == 2021])))
+  expect_true(all(!is.na(v$tambos[v$ejercicio >= 2022])))
+  expect_true(all(is.na(v$lpv[v$vacas < 50])))
+  expect_equal(unname(STATUS_CODE["sin_dato"]), 4L)
+  L <- build_layer_data(atlas, "ae")
+  expect_true(all(is.na(L$tambos_2021)))
+  expect_true(all(L$tambos_2022_s != 4))
+  n <- atlas$national
+  expect_true(all(n$lpv > 5000 & n$lpv < 7000))
+  expect_true(is.na(n$tambos[n$ejercicio == 2021]))
+  html <- as.character(kpis_ui(atlas, 2021))
+  expect_match(html, "sin dato publicado")
+})
+
 test_that("la capa climática se integra sin alterar la producción", {
   a2 <- add_climate(atlas)
   skip_if(is.null(a2$clima), "sin data/clima.rds")
@@ -98,7 +120,7 @@ test_that("la capa climática se integra sin alterar la producción", {
   expect_false(isTRUE(all.equal(v$lluvia, v$lluvia_mm)))
   L <- build_layer_data(a2, "ae")
   expect_true(all(c("lluvia_2023", "thi_2023") %in% names(L)))
-  expect_equal(color_expr("lluvia", 2023, 50, chg_lim = 50)[[1]], "interpolate")
+  expect_equal(color_expr("lluvia", 2023, 50, chg_lim = 50)[[4]][[1]], "interpolate")
   # Paneles con clima: se renderizan y no quedan cifras escritas a mano.
   html <- as.character(about_modal(a2))
   expect_match(html, "Clima")

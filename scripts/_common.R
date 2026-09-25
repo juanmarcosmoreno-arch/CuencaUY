@@ -149,3 +149,23 @@ parse_num <- function(x) {
   x <- sub(",", ".", x, fixed = TRUE)
   suppressWarnings(as.numeric(x))
 }
+
+# Planillas de INALE: bloques con una fila de encabezado «Año/Mes» (o «Año»),
+# luego una fila por año con los 12 meses en las columnas 2–13. Devuelve una
+# lista de tablas largas (anio, mes, valor), una por bloque, en orden de aparición.
+read_inale_blocks <- function(path, sheet = 1) {
+  x <- readxl::read_excel(path, sheet = sheet, col_names = FALSE, .name_repair = "minimal")
+  c1 <- trimws(as.character(x[[1]]))
+  hdr <- which(grepl("^Año\\s*(/\\s*Mes)?$", c1))
+  lapply(hdr, function(h) {
+    r <- h + 1
+    out <- list()
+    while (r <= nrow(x) && grepl("^(19|20)\\d{2}$", c1[r])) {
+      v <- suppressWarnings(as.numeric(unlist(x[r, 2:13])))
+      out[[length(out) + 1]] <- tibble::tibble(anio = as.integer(c1[r]), mes = 1:12, valor = v)
+      r <- r + 1
+    }
+    if (!length(out)) return(tibble::tibble(anio = integer(), mes = integer(), valor = numeric()))
+    dplyr::bind_rows(out) |> dplyr::filter(!is.na(valor))
+  })
+}

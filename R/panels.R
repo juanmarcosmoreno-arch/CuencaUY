@@ -22,7 +22,7 @@ kpi <- function(label, value, unit = NULL, delta = NULL, delta_class = "") {
 }
 
 delta_text <- function(cur, prev, prev_year) {
-  if (is.null(prev) || length(prev) == 0 || is.na(prev) || prev == 0) {
+  if (is.null(prev) || length(prev) == 0 || is.na(prev) || prev == 0 || is.na(cur)) {
     return(list(txt = "sin ejercicio anterior", cls = ""))
   }
   p <- 100 * (cur - prev) / prev
@@ -34,11 +34,13 @@ kpis_ui <- function(atlas, year) {
   cur <- n[n$ejercicio == year, ]
   prv <- n[n$ejercicio == year - 1, ]
   d1 <- delta_text(cur$prod, prv$prod, year - 1)
-  d3 <- delta_text(cur$rem, prv$rem, year - 1)
+  d2 <- delta_text(cur$lpv, prv$lpv, year - 1)
+  d3 <- delta_text(cur$tambos, prv$tambos, year - 1)
   tagList(
     kpi("Producción nacional", fmt_num(cur$prod / 1e6, 0), "M L", d1$txt, d1$cls),
-    kpi("Vendida", fmt_num(100 * cur$share_venta, 0), "%", "de la leche producida"),
-    kpi("Remitentes a industria", fmt_int(cur$rem), NULL, d3$txt, d3$cls)
+    kpi("Litros por vaca", fmt_int(cur$lpv), "L", d2$txt, d2$cls),
+    if (is.na(cur$tambos)) kpi("Tambos lecheros", "—", NULL, "sin dato publicado")
+    else kpi("Tambos lecheros", fmt_int(cur$tambos), NULL, d3$txt, d3$cls)
   )
 }
 
@@ -101,12 +103,16 @@ legend_ui <- function(atlas, ind_id, level, year, mode, transform, dim) {
     mid <- if (transform == "sqrt") sc$max * 0.25 else sc$max * 0.5
     ramp <- div(class = "legend-ramp", style = sprintf("background: linear-gradient(90deg, %s)", grad))
     ticks <- div(class = "legend-ticks num",
-                 span(fmt_axis(0, ind)), span(fmt_axis(mid, ind)), span(fmt_axis(sc$max, ind)))
+                 span(fmt_axis(0, ind)), span(fmt_axis(mid, ind)),
+                 span(paste0(if (isTRUE(sc$capped)) "≥ " else "", fmt_axis(sc$max, ind))))
     zero_lab <- switch(ind_id, venta = "Sin ventas declaradas", rem = "Sin tenedores",
-                       "Sin producción declarada")
+                       vacas = "Sin vacas", tambos = "Sin tambos", "Sin producción declarada")
+    vy <- atlas$values[[level]]; vy <- vy[vy$ejercicio == year, ]
+    has_na <- anyNA(vy[[ind_id]])
     extra <- div(class = "legend-extra",
-                 span(span(class = "legend-swatch", style = paste0("background:", COL_ZERO)),
-                      zero_lab))
+                 if (ind_id != "lpv") span(span(class = "legend-swatch", style = paste0("background:", COL_ZERO)), zero_lab),
+                 if (has_na) span(span(class = "legend-swatch", style = paste0("background:", COL_MISSING)),
+                                  if (ind_id == "lpv") sprintf("Sin dato (menos de 50 vacas)") else "Sin dato en este ejercicio"))
     title <- ind$label
     unit <- ind$big_unit
   } else {
@@ -121,6 +127,7 @@ legend_ui <- function(atlas, ind_id, level, year, mode, transform, dim) {
                       "Sin base de comparación"),
                  span(span(class = "legend-swatch", style = paste0("background:", COL_ZERO)),
                       "Sin producción"),
+                 span(span(class = "legend-swatch", style = paste0("background:", COL_MISSING)), "Sin dato"),
                  if (first) span(span(class = "legend-swatch", style = paste0("background:", COL_NOPREV)),
                                  "Sin ejercicio anterior"))
     title <- paste(ind$label, "— variación")
@@ -204,7 +211,8 @@ cmp_text <- function(chg, cmp, prev_year) {
          ok = paste("respecto a", prev_year),
          sin_base = "Sin base de comparación (anterior = 0)",
          sin_produccion = "Sin producción en ambos ejercicios",
-         sin_anterior = "Sin ejercicio anterior publicado",
+         sin_anterior = "Sin ejercicio anterior con dato",
+         sin_dato = "Sin dato en este ejercicio",
          "—")
 }
 
@@ -226,7 +234,7 @@ detail_ui <- function(atlas, level, id, ind_id, year) {
     sprintf("%s · código %s · %s km²", z$dep_name, z$id, fmt_int(z$area_km2))
   } else sprintf("%s km²", fmt_int(z$area_km2))
   un <- atlas$unassigned
-  dep_note <- if (level == "dep") {
+  dep_note <- if (level == "dep" && ind_id %in% c("prod", "venta", "dens")) {
     u <- un[un$dep == id & un$ejercicio == year, ]
     if (nrow(u) && u$litros > 0) {
       p(sprintf("Incluye %s L de establecimientos sin área de enumeración asignada.", fmt_int(u$litros)))
@@ -285,6 +293,8 @@ detail_ui <- function(atlas, level, id, ind_id, year) {
           if (level == "ae") p("Cada declaración se asigna completa al área de su padrón de mayor superficie: una empresa con varios predios puede concentrar su producción en una sola área. No se localizan tambos individuales."),
           if (ind_id == "dens") p("Densidad sobre la superficie total del área; no equivale a rendimiento por hectárea lechera."),
           if (ind_id == "rem") p("Cuenta números DICOSE con venta a industria; no se suman con otros destinos."),
+          if (ind_id == "tambos") p("Números DICOSE clasificados «Lecheros» por DIEA. La clasificación no se publica para 2021: ese ejercicio figura sin dato, no como cero."),
+          if (ind_id == "lpv") p("Litros del ejercicio por vaca masa (en ordeñe + secas) presente en los establecimientos del área. Con menos de 50 vacas no se calcula."),
           if (climate) p(if (ind_id == "lluvia") "Lluvia: CHIRPS v2.0 (UCSB), promedio del área, julio a junio." else "Estrés térmico: NASA POWER, celda de ~55 km más cercana al área.",
                          " Asociación no es causalidad."))
     )
@@ -329,6 +339,30 @@ about_modal <- function(atlas) {
           tags$td(class = "num", sprintf("%s (%s×)", fmt_num(r$ind_ML, 0), fmt_num(r$ratio_ind, 2))))}))),
       p("La producción declarada supera a la remisión (entre 1,05 y 1,10 veces), como corresponde al consumo en el predio y a la industrialización propia. La venta a industria declarada queda debajo de la remisión y oscila frente a «cuota o reparto»: por eso el atlas muestra la leche vendida agregada.")
     ),
+    {
+      n <- atlas$national; y0 <- min(n$ejercicio); y9 <- max(n$ejercicio)
+      ty <- n$ejercicio[!is.na(n$tambos)]
+      tagList(
+        h3("Rodeo y tambos"),
+        p(sprintf("Vacas lecheras: vacas en ordeñe más secas presentes en cada establecimiento, propias o ajenas (recurso «Animales detallados»). Se cuentan donde se ordeñan, igual que sus litros. Contar solo las propias ubicaba en el área del dueño, o dejaba sin área, a ≈ 4 %% del rodeo de productores «sin campo»; el total nacional difiere menos de 1,5 %% entre ambos criterios. Entre %d y %d el rodeo pasó de %s a %s vacas masa, y los litros por vaca de %s a %s.",
+                  y0, y9, fmt_int(n$vacas[1]), fmt_int(n$vacas[nrow(n)]), fmt_int(n$lpv[1]), fmt_int(n$lpv[nrow(n)]))),
+        p(sprintf("Tambos: números DICOSE clasificados «Lecheros» por DIEA según giro y uso del suelo (recurso «Datos generales»). La clasificación se publica desde %d; %s figura sin dato, no como cero. De %s a %s tambos entre %d y %d.",
+                  min(ty), paste(setdiff(n$ejercicio, ty), collapse = ", "), fmt_int(n$tambos[n$ejercicio == min(ty)]),
+                  fmt_int(n$tambos[n$ejercicio == max(ty)]), min(ty), max(ty)))
+      )
+    },
+    if (!is.null(atlas$clima) && !is.null(atlas$clima$nacional_anual$modelo_precio)) {
+      mp <- atlas$clima$nacional_anual$modelo_precio; cn <- atlas$clima$nacional_anual$cor
+      b <- mp[2, ]; r_prev <- cn$r[cn$predictor == "Precio real del ejercicio anterior"]
+      r_sig <- cn$r[cn$predictor == "Precio real del ejercicio siguiente (placebo)"]
+      tagList(
+        h3("Precio de la leche"),
+        p(sprintf("Precio al productor en tambo (INALE, $/L con reliquidaciones), deflactado por el IPC a pesos de 2025 y promediado por ejercicio, ponderado por la remisión. La variación de la remisión se asocia con la del precio real del ejercicio anterior: r = %s (el placebo con el precio del ejercicio siguiente da %s). Con precio y lluvia en el mismo modelo, +10 %% de precio real se asocia con %s de remisión al año siguiente (IC 95 %%: %s a %s; R² = %s), y la lluvia no suma efecto.",
+                  fmt_num(r_prev, 2), fmt_num(r_sig, 2), fmt_pct(10 * b$estimado, 1), fmt_pct(10 * b$lo, 1), fmt_pct(10 * b$hi, 1),
+                  fmt_num(attr(mp, "r2"), 2))),
+        p("El IPC publicado por INALE trae un valor inconsistente en mayo de 2026 (repite el de mayo de 2025); se interpola entre abril y junio.")
+      )
+    },
     if (!is.null(atlas$clima)) {
       cl <- atlas$clima; pa <- cl$panel_areas; na <- cl$nacional_anual
       lb <- function(t) { r <- pa$coefs[pa$coefs$termino == t, ]; sprintf("%s (IC 95 %%: %s a %s)", fmt_pct(10 * r$estimado, 1), fmt_pct(10 * r$lo, 1), fmt_pct(10 * r$hi, 1)) }

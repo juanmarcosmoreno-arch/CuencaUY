@@ -276,6 +276,90 @@
     "nivel": "control"
   },
   {
+    "id": "2021_vacas_criterios",
+    "ok": true,
+    "detalle": "Vacas masa dentro de los establecimientos (PD+AD) 423.162 vs. propias (PD+PF) 421.306: +0.4 %",
+    "nivel": "control"
+  },
+  {
+    "id": "2021_vacas_validas",
+    "ok": true,
+    "detalle": "423.162 vacas masa (318.329 en ordeñe); sin faltantes ni negativos",
+    "nivel": "control"
+  },
+  {
+    "id": "2022_vacas_criterios",
+    "ok": true,
+    "detalle": "Vacas masa dentro de los establecimientos (PD+AD) 391.970 vs. propias (PD+PF) 390.210: +0.5 %",
+    "nivel": "control"
+  },
+  {
+    "id": "2022_vacas_validas",
+    "ok": true,
+    "detalle": "391.970 vacas masa (300.313 en ordeñe); sin faltantes ni negativos",
+    "nivel": "control"
+  },
+  {
+    "id": "2023_vacas_criterios",
+    "ok": true,
+    "detalle": "Vacas masa dentro de los establecimientos (PD+AD) 386.413 vs. propias (PD+PF) 383.549: +0.7 %",
+    "nivel": "control"
+  },
+  {
+    "id": "2023_vacas_validas",
+    "ok": true,
+    "detalle": "386.413 vacas masa (298.960 en ordeñe); sin faltantes ni negativos",
+    "nivel": "control"
+  },
+  {
+    "id": "2024_vacas_criterios",
+    "ok": true,
+    "detalle": "Vacas masa dentro de los establecimientos (PD+AD) 387.947 vs. propias (PD+PF) 386.308: +0.4 %",
+    "nivel": "control"
+  },
+  {
+    "id": "2024_vacas_validas",
+    "ok": true,
+    "detalle": "387.947 vacas masa (296.954 en ordeñe); sin faltantes ni negativos",
+    "nivel": "control"
+  },
+  {
+    "id": "2025_vacas_criterios",
+    "ok": true,
+    "detalle": "Vacas masa dentro de los establecimientos (PD+AD) 393.095 vs. propias (PD+PF) 387.636: +1.4 %",
+    "nivel": "control"
+  },
+  {
+    "id": "2025_vacas_validas",
+    "ok": true,
+    "detalle": "393.095 vacas masa (302.048 en ordeñe); sin faltantes ni negativos",
+    "nivel": "control"
+  },
+  {
+    "id": "tambos_ejercicios",
+    "ok": true,
+    "detalle": "Tambos (especialización «Lecheros») disponibles para 2022, 2023, 2024, 2025; 2021 sin clasificación publicada",
+    "nivel": "control"
+  },
+  {
+    "id": "vacas_suma_departamentos",
+    "ok": true,
+    "detalle": "Σ vacas por departamento = total nacional, cada ejercicio",
+    "nivel": "control"
+  },
+  {
+    "id": "litros_por_vaca_plausible",
+    "ok": true,
+    "detalle": "Litros por vaca masa, nacional: 2021: 5.395; 2022: 5.614; 2023: 5.888; 2024: 5.825; 2025: 5.846",
+    "nivel": "control"
+  },
+  {
+    "id": "vacas_sin_area",
+    "ok": true,
+    "detalle": "Vacas sin área de enumeración: 0/0/0/0/0 % del rodeo (litros sin área: 0.2/0.2/0.2/0.2/0.2 %)",
+    "nivel": "control"
+  },
+  {
     "id": "suma_ae_mas_sin_asignar_igual_nacional",
     "ok": true,
     "detalle": "Σ AE + litros sin AE = total nacional (bovinos de leche), cada ejercicio",

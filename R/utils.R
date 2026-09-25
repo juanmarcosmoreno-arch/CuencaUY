@@ -6,7 +6,7 @@ fmt_int <- function(x) {
 
 fmt_num <- function(x, digits = 1) {
   ifelse(is.na(x), "—",
-         formatC(x, format = "f", digits = digits, big.mark = ".", decimal.mark = ","))
+         sub("^-", "\u2212", formatC(x, format = "f", digits = digits, big.mark = ".", decimal.mark = ",")))
 }
 
 fmt_pct <- function(x, digits = 1, sign = TRUE) {
@@ -25,6 +25,9 @@ fmt_value <- function(x, ind, compact = TRUE) {
   }
   if (ind$id == "dens") return(paste(fmt_int(x), "L/km²"))
   if (ind$id == "lluvia") return(fmt_pct(x, 0))
+  if (ind$id == "vacas") return(paste(fmt_int(x), if (round(x) == 1) "vaca" else "vacas"))
+  if (ind$id == "lpv") return(paste(fmt_int(x), "L/vaca"))
+  if (ind$id == "tambos") return(paste(fmt_int(x), if (round(x) == 1) "tambo" else "tambos"))
   if (ind$id == "thi") return(paste(fmt_int(x), if (round(x) == 1) "día" else "días"))
   paste(fmt_int(x), if (x == 1) "tenedor" else "tenedores")
 }
@@ -36,7 +39,7 @@ fmt_axis <- function(x, ind) {
     if (x >= 1e3) return(paste0(fmt_num(x / 1e3, 0), " mil"))
     return(fmt_int(x))
   }
-  if (ind$id == "dens" && x >= 1e3) return(paste0(fmt_num(x / 1e3, 0), " mil"))
+  if (ind$id %in% c("dens", "vacas") && x >= 1e3) return(paste0(fmt_num(x / 1e3, 0), " mil"))
   fmt_int(x)
 }
 

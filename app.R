@@ -19,7 +19,7 @@ suppressPackageStartupMessages({
 for (f in list.files("R", pattern = "\\.R$", full.names = TRUE)) source(f, local = TRUE)
 
 # Carga única al iniciar el proceso (compartida por todas las sesiones) --------
-ATLAS <- add_climate(load_atlas())
+ATLAS <- order_indicators(add_climate(load_atlas()))
 if (!is.null(ATLAS)) {
   LAYERS <- list(dep = build_layer_data(ATLAS, "dep"), ae = build_layer_data(ATLAS, "ae"))
   SEARCH <- build_search_index(ATLAS)

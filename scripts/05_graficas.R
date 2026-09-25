@@ -248,4 +248,61 @@ if (file.exists(clima_path)) {
             file.path(out_dir, "clima-panel-areas.csv"))
 }
 
+# 6. Precio y remisión (si el análisis incluyó precios) ---------------------------
+if (file.exists(clima_path) && !is.null(cl$nacional_anual$modelo_precio)) {
+  na6 <- cl$nacional_anual$datos |> filter(!is.na(d_rem), !is.na(d_precio_prev))
+  mp <- cl$nacional_anual$modelo_precio; b <- mp[2, ]
+  r6 <- cor(na6$d_rem, na6$d_precio_prev)
+  fit6 <- lm(d_rem ~ d_precio_prev, data = na6)
+  xs <- range(na6$d_precio_prev)
+  lab6 <- na6 |> filter(ejercicio %in% c(2009, 2012, 2016, 2017, 2023, 2026) |
+                          abs(d_rem) > 12 | abs(d_precio_prev) > 25)
+  p6 <- ggplot(na6, aes(d_precio_prev, d_rem)) +
+    geom_hline(yintercept = 0, colour = "#B9C4BE", linewidth = 0.4) +
+    geom_vline(xintercept = 0, colour = "#B9C4BE", linewidth = 0.4) +
+    geom_abline(intercept = coef(fit6)[1], slope = coef(fit6)[2], colour = "#176B60", linewidth = 0.8, alpha = 0.6) +
+    geom_point(size = 3.4, shape = 21, fill = "#176B60", colour = BG, stroke = 1.2) +
+    geom_text(data = lab6, aes(label = ejercicio), family = "Inter Atlas", size = 3.5, colour = INK,
+              nudge_y = 1.3) +
+    scale_x_continuous(labels = function(v) paste0(signed(v), " %")) +
+    scale_y_continuous(breaks = seq(-20, 30, 5), labels = function(v) paste0(signed(v), " %")) +
+    labs(title = "La leche responde al precio, un año después",
+         subtitle = wrap(sprintf("Cada punto es un ejercicio (julio–junio). Horizontal: variación del precio real al productor en el ejercicio anterior. Vertical: variación de la remisión a planta. r = %s; +10 %% de precio se asocia con %s %% de remisión al año siguiente.",
+                                 signed(r6, 2), signed(10 * b$estimado, 1)), 66),
+         caption = wrap(sprintf("Fuentes: INALE (precio en tambo con reliquidaciones y remisión), IPC (INE) para deflactar a pesos de 2025. El precio del ejercicio siguiente (placebo) no se asocia: r = %s. La lluvia no suma efecto. Asociación no es causalidad. Atlas Lechero Uruguay.",
+                                signed(cl$nacional_anual$cor$r[cl$nacional_anual$cor$predictor == "Precio real del ejercicio siguiente (placebo)"], 2)), 84)) +
+    theme_atlas() +
+    theme(panel.grid.major.x = element_line(colour = LINE, linewidth = 0.35),
+          axis.title = element_blank())
+  save_png(p6, "precio-y-remision.png")
+  write_csv(na6 |> select(ejercicio, remision, d_rem, precio_real, d_precio_prev), file.path(out_dir, "precio-y-remision.csv"))
+}
+
+# 7. Rodeo y tambos (DICOSE) --------------------------------------------------------
+n7 <- a$national
+d7 <- bind_rows(
+  n7 |> transmute(ejercicio, panel = "Producción\nmillones de litros", v = prod / 1e6, lab = fmt_es(prod / 1e6)),
+  n7 |> transmute(ejercicio, panel = "Vacas lecheras\nmiles de vacas masa", v = vacas / 1e3, lab = fmt_es(vacas / 1e3)),
+  n7 |> transmute(ejercicio, panel = "Litros por vaca\npor año", v = lpv, lab = fmt_es(lpv)),
+  n7 |> transmute(ejercicio, panel = "Tambos\nnúmeros DICOSE «Lecheros»", v = tambos, lab = ifelse(is.na(tambos), "s/d", fmt_es(tambos)))) |>
+  mutate(panel = factor(panel, levels = unique(panel)))
+chg7 <- function(x, y0 = 1) { x <- x[!is.na(x)]; 100 * (x[length(x)] / x[1] - 1) }
+p7 <- ggplot(d7, aes(factor(ejercicio), v)) +
+  geom_col(aes(fill = ejercicio == max(ejercicio)), width = 0.62, na.rm = TRUE) +
+  geom_text(aes(y = ifelse(is.na(v), 0, v), label = lab), vjust = -0.5, family = "Inter Atlas", size = 3.3, colour = INK) +
+  facet_wrap(~panel, ncol = 2, scales = "free_y") +
+  scale_fill_manual(values = c(`TRUE` = "#176B60", `FALSE` = "#A9CFC0"), guide = "none") +
+  scale_y_continuous(expand = expansion(mult = c(0, 0.18)), labels = NULL) +
+  labs(title = "Menos vacas y tambos, más leche por vaca",
+       subtitle = wrap(sprintf("Uruguay, ejercicios %d–%d. La producción se mantiene (%s %%) con %s %% de vacas: cada vaca rinde %s %% más. Tambos: %s %% desde %d.",
+                               min(n7$ejercicio), max(n7$ejercicio), signed(chg7(n7$prod), 1), signed(chg7(n7$vacas), 1),
+                               signed(chg7(n7$lpv), 1), signed(chg7(n7$tambos), 1), min(n7$ejercicio[!is.na(n7$tambos)])), 66),
+       caption = wrap("Fuente: MGAP, declaraciones juradas DICOSE–SNIG. Vaca masa = en ordeñe + secas presentes en los establecimientos. La clasificación «Lecheros» no se publica para 2021 (s/d). Atlas Lechero Uruguay.", 84)) +
+  theme_atlas() +
+  theme(strip.text = element_text(colour = INK, face = "bold", size = 12, hjust = 0, lineheight = 1.1),
+        panel.grid.major.y = element_blank(), panel.spacing = unit(22, "pt"),
+        axis.text.y = element_blank())
+save_png(p7, "rodeo-y-tambos.png")
+write_csv(n7 |> select(ejercicio, prod, vacas, lpv, tambos), file.path(out_dir, "rodeo-y-tambos.csv"))
+
 msg("Listo.")

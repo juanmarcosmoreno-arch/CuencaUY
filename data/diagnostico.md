@@ -1,6 +1,6 @@
 # Diagnóstico de datos — Atlas Lechero Uruguay
 
-Generado: 2026-09-25 06:53 · atlas.rds: 2026-09-25
+Generado: 2026-09-25 07:50 · atlas.rds: 2026-09-25
 
 ## Años disponibles
 
@@ -24,6 +24,9 @@ Generado: 2026-09-25 06:53 · atlas.rds: 2026-09-25
 - **Leche vendida** (litros): Litros declarados como venta: a la industria, como cuota o reparto propio y otras ventas de leche. Se agregan porque la frontera entre venta a industria y cuota o reparto cambia entre ejercicios.
 - **Densidad territorial** (litros por km² de territorio): Producción dividida por la superficie total del área (km²). Permite comparar áreas de distinto tamaño. No es un rendimiento por hectárea lechera: el denominador incluye todo el territorio, no la superficie de los tambos.
 - **Tenedores con venta a industria** (tenedores (números DICOSE)): Números DICOSE que declaran venta de leche a la industria. Se cuentan solo en ese destino: un mismo productor puede declarar varios destinos y no se suman entre sí.
+- **Vacas lecheras** (vacas masa (en ordeñe + secas)): Vacas en ordeñe más vacas secas de los bovinos de leche que están en cada establecimiento, propias o ajenas: se cuentan donde se ordeñan, igual que sus litros.
+- **Litros por vaca** (litros por vaca masa al año): Producción del ejercicio dividida por las vacas masa (en ordeñe + secas). Solo se calcula donde hay al menos 50 vacas; con menos queda sin dato. Mide productividad del rodeo, a diferencia de la densidad territorial.
+- **Tambos** (números DICOSE clasificados «Lecheros»): Números DICOSE que DIEA clasifica como productores lecheros según giro y uso del suelo. Cada tambo se cuenta una vez. La clasificación no se publica para 2021: ese ejercicio figura sin dato, no como cero.
 
 ## Contraste con INALE (remisión a planta, julio–junio)
 
@@ -45,5 +48,7 @@ Generado: 2026-09-25 06:53 · atlas.rds: 2026-09-25
 - Cartografía de AE vigente: los códigos son estables en 2021–2025, pero no hay capas históricas para verificar cambios de límite.
 - Dos versiones oficiales de los límites de AE (MGAP y SNIG) comparten códigos pero difieren en geometría: IoU mediana 0,91, 112 de 634 áreas con IoU < 0,8. Los valores no cambian (enlace por código); la densidad varía con la superficie (mediana |Δ| 3,1 %). Capa usada: MGAP.
 - Caprinos (especie 4) excluidos: sin control de calidad según los metadatos.
+- Vacas: en ordeñe + secas presentes en los establecimientos (propias y ajenas dentro), para ubicarlas donde se ordeñan; el total difiere < 1,5 % del criterio «propias dentro y fuera». Litros por vaca solo con ≥ 50 vacas. Nacional: 5.395 L/vaca (2021) → 5.846 (2025).
+- Tambos («Lecheros» según DIEA): sin dato en 2021 porque la clasificación no se publica; se muestra como faltante, no como cero.
 
-Controles: 50 de preparación y 23 independientes; fallidos: 0.
+Controles: 64 de preparación y 33 independientes; fallidos: 0.

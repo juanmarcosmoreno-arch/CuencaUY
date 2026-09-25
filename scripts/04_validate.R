@@ -29,13 +29,16 @@ assert(all(nchar(a$geo$dep$id) == 2) && is.character(a$geo$dep$id),
 assert(!anyDuplicated(v_ae[c("id", "ejercicio")]) && !anyDuplicated(v_dep[c("id", "ejercicio")]),
        "Una sola fila por zona y ejercicio (sin duplicaciones)")
 assert(nrow(v_ae) == nrow(a$geo$ae) * length(a$years), "Todas las AE tienen valor en cada ejercicio (cero explícito)")
-for (k in c("prod", "venta", "rem")) {
+for (k in c("prod", "venta", "rem", "vacas")) {
   s_dep <- tapply(v_dep[[k]], v_dep$ejercicio, sum)
   assert(isTRUE(all.equal(as.numeric(s_dep), n[[k]])), sprintf("Σ departamentos = nacional (%s)", k))
   s_ae <- tapply(v_ae[[k]], v_ae$ejercicio, sum)
   assert(all(as.numeric(s_ae) <= n[[k]] + 1e-6), sprintf("Σ AE ≤ nacional (%s); la diferencia es lo no asignado", k))
 }
 assert(all(v_ae$venta <= v_ae$prod + 1e-6), "Leche vendida ≤ producción en cada AE")
+assert(all(is.na(v_ae$lpv[v_ae$vacas < 50])), "Litros por vaca sin calcular donde hay menos de 50 vacas")
+assert(all(is.na(v_ae$tambos[v_ae$ejercicio == 2021])) && all(v_ae$tambos_cmp[v_ae$ejercicio == 2021] == "sin_dato"),
+       "Tambos 2021: sin dato (no cero) y estado «sin_dato»")
 cmp_ok <- with(v_ae, all(prod_cmp[!is.na(prod_prev) & prod_prev == 0 & prod > 0] == "sin_base") &&
                      all(is.na(prod_chg[prod_cmp != "ok"])))
 assert(cmp_ok, "Base cero → «sin base de comparación», nunca infinito")
@@ -43,7 +46,12 @@ assert(all(v_ae$prod_cmp[v_ae$ejercicio == min(a$years)] == "sin_anterior"),
        "Primer ejercicio sin variación")
 for (lv in c("ae", "dep")) for (k in names(a$indicators)) {
   s <- a$scales[[lv]][[k]]
-  assert(s$max >= max(a$values[[lv]][[k]]), sprintf("Escala fija %s/%s cubre todos los ejercicios", lv, k))
+  x <- a$values[[lv]][[k]]
+  if (isTRUE(s$capped)) {
+    assert(s$max >= stats::quantile(x, 0.98, na.rm = TRUE), sprintf("Escala fija %s/%s cubre el 98 %% de los valores (acotada, «≥» en la leyenda)", lv, k))
+  } else {
+    assert(s$max >= max(x, na.rm = TRUE), sprintf("Escala fija %s/%s cubre todos los ejercicios", lv, k))
+  }
 }
 assert(all(a$national$prod > 0), "Producción nacional positiva en todos los ejercicios")
 
@@ -105,6 +113,10 @@ lines <- c(
       fmt(median(abs(sc$dif_pct), na.rm = TRUE), 1), toupper(a$ae_source %||% "mgap")) else character(0)
   },
   "- Caprinos (especie 4) excluidos: sin control de calidad según los metadatos.",
+  sprintf("- Vacas: en ordeñe + secas presentes en los establecimientos (propias y ajenas dentro), para ubicarlas donde se ordeñan; el total difiere < 1,5 %% del criterio «propias dentro y fuera». Litros por vaca solo con ≥ 50 vacas. Nacional: %s L/vaca (%d) → %s (%d).",
+          fmt(n$lpv[1]), n$ejercicio[1], fmt(n$lpv[nrow(n)]), n$ejercicio[nrow(n)]),
+  sprintf("- Tambos («Lecheros» según DIEA): sin dato en %s porque la clasificación no se publica; se muestra como faltante, no como cero.",
+          paste(n$ejercicio[is.na(n$tambos)], collapse = ", ")),
   "",
   sprintf("Controles: %d de preparación y %d independientes; fallidos: %d.",
           length(a$checks), n_assert, length(fails))

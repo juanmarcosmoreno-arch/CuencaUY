@@ -229,6 +229,50 @@ check("nacional_anual", TRUE, nivel = "aviso",
               n_nac, r_crit, paste(sprintf("%.2f", cor_nac$r), collapse = ", ")))
 print(cor_nac)
 
+# Precio real al productor (INALE, $/L con reliquidaciones, deflactado por IPC)
+precio_path <- file.path(DIR_RAW, "oficial", "inale_precio_leche_tambo.xlsx")
+ipc_path <- file.path(DIR_RAW, "oficial", "inale_ipc_mensual.xlsx")
+precio <- NULL; modelo_precio <- NULL
+if (file.exists(precio_path) && file.exists(ipc_path)) {
+  pr  <- read_inale_blocks(precio_path)[[1]] |> rename(precio = valor)
+  ipc <- read_inale_blocks(ipc_path)[[1]] |> rename(ipc = valor) |> arrange(anio, mes)
+  # Error de la fuente: un mes que cae > 1,5 % y rebota > 1,5 % al siguiente (forma en V)
+  # se reemplaza por la media geométrica de sus vecinos.
+  ch <- c(NA, diff(log(ipc$ipc)) * 100); nx <- c(ch[-1], NA)
+  bad <- which(ch < -1.5 & nx > 1.5)
+  for (b in bad) ipc$ipc[b] <- sqrt(ipc$ipc[b - 1] * ipc$ipc[b + 1])
+  check("ipc_corregido", TRUE, nivel = if (length(bad)) "aviso" else "control",
+        if (length(bad)) sprintf("IPC de INALE con valor inconsistente en %s (copia del mismo mes del año anterior); se interpola entre meses vecinos",
+                                 paste(sprintf("%02d/%d", ipc$mes[bad], ipc$anio[bad]), collapse = ", "))
+        else "IPC sin saltos inconsistentes")
+  base <- mean(ipc$ipc[ipc$anio == 2025])
+  precio <- pr |> inner_join(ipc, by = c("anio", "mes")) |>
+    mutate(fecha = as.Date(sprintf("%d-%02d-01", anio, mes)), precio_real = precio * base / ipc) |>
+    left_join(rem, by = "fecha")
+  pe <- precio |> filter(!is.na(remision)) |> mutate(ejercicio = ejercicio_de(fecha)) |>
+    group_by(ejercicio) |> summarise(n = n(), precio_real = weighted.mean(precio_real, remision)) |>
+    filter(n == 12) |> select(-n)
+  ej_nac <- ej_nac |> left_join(pe, by = "ejercicio") |>
+    mutate(d_precio = 100 * log(precio_real / lag(precio_real)),
+           d_precio_prev = lag(d_precio), d_precio_sig = lead(d_precio))
+  cor_nac <- bind_rows(cor_nac, tibble(
+    predictor = c("Precio real del mismo ejercicio", "Precio real del ejercicio anterior",
+                  "Precio real del ejercicio siguiente (placebo)"),
+    r = c(cor(ej_nac$d_rem, ej_nac$d_precio, use = "c"), cor(ej_nac$d_rem, ej_nac$d_precio_prev, use = "c"),
+          cor(ej_nac$d_rem, ej_nac$d_precio_sig, use = "c"))))
+  fitp <- lm(d_rem ~ d_precio_prev + lluvia_anom, data = ej_nac)
+  sep <- nw_se(fitp, L = 2)
+  modelo_precio <- tibble(termino = c("Constante", "Precio real, ejercicio anterior (Δ %)", "Lluvia del ejercicio (% vs. normal)"),
+                          estimado = unname(coef(fitp)), se = unname(sep),
+                          lo = unname(coef(fitp) - 1.96 * sep), hi = unname(coef(fitp) + 1.96 * sep))
+  attr(modelo_precio, "r2") <- summary(fitp)$r.squared; attr(modelo_precio, "n") <- nobs(fitp)
+  print(cor_nac); print(modelo_precio, digits = 3)
+  rp <- cor_nac$r[cor_nac$predictor == "Precio real del ejercicio anterior"]
+  check("precio_y_remision", TRUE, nivel = "aviso",
+        sprintf("Nacional: variación de la remisión vs. precio real del ejercicio anterior r = %.2f (umbral 5 %% ≈ %.2f); con precio y lluvia, R² = %.2f",
+                rp, r_crit, attr(modelo_precio, "r2")))
+}
+
 # Episodios secos: humedad del suelo de 12 meses por debajo de −1 desvío.
 rl <- rle(!is.na(d$gw12) & d$gw12 < -1)
 ends <- cumsum(rl$lengths); starts <- ends - rl$lengths + 1
@@ -278,7 +322,8 @@ clima <- list(
   chirps_ultimo = ultimo, power_ultimo = max(pw$fecha),
   ejercicios = list(ae = ej_ae, dep = ej_dep),
   cuenca = cuenca, analisis = d, rezagos = rezagos, mejor_rezago = best,
-  nacional_anual = list(datos = ej_nac, cor = cor_nac, n = n_nac, r_crit = r_crit),
+  nacional_anual = list(datos = ej_nac, cor = cor_nac, n = n_nac, r_crit = r_crit, modelo_precio = modelo_precio),
+  precio = precio,
   panel_areas = list(coefs = coef_ae, placebo = coef_placebo, n = nrow(va), areas = n_distinct(va$id)),
   episodios = ep, checks = checks,
   fuentes = list(

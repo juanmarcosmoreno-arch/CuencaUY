@@ -5,7 +5,7 @@
 # Debe ejecutarse desde la raíz del proyecto.
 
 args <- commandArgs(trailingOnly = TRUE)
-steps <- c("scripts/01_download_dicose.R", "scripts/02_download_geometry.R",
+steps <- c("scripts/01_download_dicose.R", "scripts/01b_download_inale.R", "scripts/02_download_geometry.R",
            "scripts/03_prepare.R", "scripts/04_validate.R")
 # Clima y gráficas: opcionales. Si fallan, el atlas sigue funcionando sin la capa.
 optional <- c("scripts/06_download_clima.R", "scripts/07_clima.R", "scripts/05_graficas.R")

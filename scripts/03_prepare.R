@@ -327,6 +327,62 @@ val_dep <- grid_dep |> left_join(val_dep, by = c("id", "ejercicio")) |>
   left_join(st_drop_geometry(dep) |> select(id, area_km2), by = "id") |>
   mutate(dens = prod / area_km2)
 
+# Rodeo lechero y tambos -------------------------------------------------------
+# vacas: vacas en ordeñe + secas (bovinos de leche, categorías 2 y 3), animales
+#        propios y ajenos DENTRO del establecimiento (PD+AD): cada vaca se ubica
+#        donde está y se ordeña, igual que sus litros. Con PD+PF, las vacas de
+#        productores «sin campo» (≈ 4 % del rodeo) quedaban sin área o en el área
+#        del dueño y no en la del tambo que las ordeña.
+# lpv:   litros por vaca masa = producción / vacas; solo con ≥ MIN_VACAS vacas.
+# tambos: números DICOSE que DIEA clasifica como «Lecheros» (datos generales).
+#        La clasificación no se publica en 2021: ese ejercicio queda sin dato.
+MIN_VACAS <- 50
+rodeo_rows <- list(); tambo_rows <- list()
+for (y in YEARS) {
+  pa <- resource_path(y, "Animales detallados")
+  a <- read_mgap_csv(pa) |>
+    filter(as.integer(EspecieCodigo) == 11, as.integer(CategoriaCodigo) %in% c(2, 3)) |>
+    mutate(ejercicio = as.integer(Ejercicio), cat = as.integer(CategoriaCodigo),
+           n = parse_num(AnimalesPorCategoriaPD_AD),
+           dep_ine = unname(DIC2INE[as.character(as.integer(DepartamentoCodigo))]),
+           ae_id = ifelse(as.integer(AreaEnumeracion) == 0, NA_character_,
+                          sprintf("%07d", as.integer(AreaEnumeracion))))
+  pf_total <- sum(parse_num(read_mgap_csv(pa) |> filter(as.integer(EspecieCodigo) == 11,
+                  as.integer(CategoriaCodigo) %in% c(2, 3)) |> pull(AnimalesPorCategoriaPD_PF)))
+  check(paste0(y, "_vacas_criterios"), abs(sum(a$n) / pf_total - 1) < 0.03,
+        sprintf("Vacas masa dentro de los establecimientos (PD+AD) %s vs. propias (PD+PF) %s: %+.1f %%",
+                format(sum(a$n), big.mark = "."), format(pf_total, big.mark = "."), 100 * (sum(a$n) / pf_total - 1)))
+  check(paste0(y, "_vacas_validas"), !anyNA(a$n) && all(a$n >= 0) && all(a$ejercicio == y),
+        sprintf("%s vacas masa (%s en ordeñe); sin faltantes ni negativos",
+                format(sum(a$n), big.mark = "."), format(sum(a$n[a$cat == 2]), big.mark = ".")))
+  rodeo_rows[[as.character(y)]] <- a |> select(ejercicio, dep_ine, ae_id, cat, n)
+  g <- read_mgap_csv(resource_path(y, "Datos generales"))
+  if ("EspecializacionMGAPCodigo" %in% names(g)) {
+    g <- g |> filter(as.integer(EspecializacionMGAPCodigo) == 2) |>
+      mutate(ejercicio = y, t = parse_num(CantidadTenedores),
+             dep_ine = unname(DIC2INE[as.character(as.integer(DepartamentoCodigo))]),
+             ae_id = ifelse(as.integer(AreaEnumeracion) == 0, NA_character_,
+                            sprintf("%07d", as.integer(AreaEnumeracion))))
+    tambo_rows[[as.character(y)]] <- g |> select(ejercicio, dep_ine, ae_id, t)
+  }
+}
+rodeo <- bind_rows(rodeo_rows); tambos <- bind_rows(tambo_rows)
+TAMBO_YEARS <- sort(unique(tambos$ejercicio))
+check("tambos_ejercicios", length(TAMBO_YEARS) > 0,
+      sprintf("Tambos (especialización «Lecheros») disponibles para %s; %s sin clasificación publicada",
+              paste(TAMBO_YEARS, collapse = ", "), paste(setdiff(YEARS, TAMBO_YEARS), collapse = ", ")))
+
+add_rodeo <- function(v, key) {
+  r <- rodeo |> filter(!is.na(.data[[key]])) |> group_by(id = .data[[key]], ejercicio) |>
+    summarise(vacas = sum(n), vo = sum(n[cat == 2]), .groups = "drop")
+  t <- tambos |> filter(!is.na(.data[[key]])) |> group_by(id = .data[[key]], ejercicio) |>
+    summarise(tambos = sum(t), .groups = "drop")
+  v |> left_join(r, by = c("id", "ejercicio")) |> left_join(t, by = c("id", "ejercicio")) |>
+    mutate(vacas = coalesce(vacas, 0), vo = coalesce(vo, 0),
+           tambos = ifelse(ejercicio %in% TAMBO_YEARS, coalesce(tambos, 0), NA_real_),
+           lpv = ifelse(vacas >= MIN_VACAS, prod / vacas, NA_real_))
+}
+
 unassigned <- bov |> filter(is.na(ae_id)) |> group_by(dep = dep_ine, ejercicio) |>
   summarise(litros = sum(litros), filas = n(), .groups = "drop")
 
@@ -340,7 +396,23 @@ nacional <- bov |> group_by(ejercicio) |> agg() |>
                         consumo = sum(litros[tipo %in% c("4", "5")]),
                         otros = sum(litros[tipo == "11"]), .groups = "drop"),
             by = "ejercicio") |>
-  mutate(share_venta = venta / prod)
+  mutate(share_venta = venta / prod) |>
+  left_join(rodeo |> group_by(ejercicio) |>
+              summarise(vacas = sum(n), vo = sum(n[cat == 2]), vacas_sin_ae = sum(n[is.na(ae_id)])),
+            by = "ejercicio") |>
+  left_join(tambos |> group_by(ejercicio) |> summarise(tambos = sum(t)), by = "ejercicio") |>
+  mutate(lpv = prod / vacas)
+val_ae  <- add_rodeo(val_ae, "ae_id")
+val_dep <- add_rodeo(val_dep, "dep_ine")
+check("vacas_suma_departamentos",
+      isTRUE(all.equal(val_dep |> group_by(ejercicio) |> summarise(v = sum(vacas)) |> pull(v), nacional$vacas)),
+      "Σ vacas por departamento = total nacional, cada ejercicio")
+check("litros_por_vaca_plausible", all(nacional$lpv > 3000 & nacional$lpv < 9000),
+      sprintf("Litros por vaca masa, nacional: %s", paste(sprintf("%d: %s", nacional$ejercicio, format(round(nacional$lpv), big.mark = ".")), collapse = "; ")))
+check("vacas_sin_area", all(nacional$vacas_sin_ae / nacional$vacas < 0.02),
+      sprintf("Vacas sin área de enumeración: %s %% del rodeo (litros sin área: %s %%)",
+              paste(round(100 * nacional$vacas_sin_ae / nacional$vacas, 1), collapse = "/"),
+              paste(round(100 * nacional$sin_ae_litros / nacional$prod, 1), collapse = "/")))
 
 check("suma_ae_mas_sin_asignar_igual_nacional",
       isTRUE(all.equal(val_ae |> group_by(ejercicio) |> summarise(v = sum(prod)) |> pull(v) +
@@ -352,24 +424,27 @@ check("suma_departamentos_igual_nacional",
       "Σ departamentos = total nacional, cada ejercicio")
 
 # Variación interanual entre ejercicios consecutivos publicados.
+CHG_VARS <- c("prod", "venta", "rem", "dens", "vacas", "lpv", "tambos")
 add_change <- function(v) {
   v |> arrange(id, ejercicio) |> group_by(id) |>
-    mutate(across(c(prod, venta, rem, dens), list(
+    mutate(across(all_of(CHG_VARS), list(
       prev = ~ ifelse(ejercicio - lag(ejercicio) == 1, lag(.x), NA_real_)
     ), .names = "{.col}_prev")) |>
     ungroup() |>
-    mutate(across(c(prod, venta, rem, dens), list(
+    mutate(across(all_of(CHG_VARS), list(
       chg = ~ {
         prev <- get(paste0(cur_column(), "_prev"))
         ifelse(is.na(prev) | prev == 0, NA_real_, 100 * (.x - prev) / prev)
       }
     ), .names = "{.col}_chg"),
-    across(c(prod, venta, rem, dens), list(
+    across(all_of(CHG_VARS), list(
       # Estado de la comparación: ok | sin_base (anterior 0, actual > 0) |
-      # sin_produccion (ambos 0) | sin_anterior (no hay ejercicio previo publicado)
+      # sin_produccion (ambos 0) | sin_anterior (no hay ejercicio previo con dato) |
+      # sin_dato (el ejercicio no tiene dato: no es cero)
       cmp = ~ {
         prev <- get(paste0(cur_column(), "_prev"))
-        dplyr::case_when(is.na(prev) ~ "sin_anterior",
+        dplyr::case_when(is.na(.x) ~ "sin_dato",
+                         is.na(prev) ~ "sin_anterior",
                          prev == 0 & .x == 0 ~ "sin_produccion",
                          prev == 0 ~ "sin_base",
                          TRUE ~ "ok")
@@ -392,7 +467,18 @@ INDICATORS <- list(
               desc = "Producción dividida por la superficie total del área (km²). Permite comparar áreas de distinto tamaño. No es un rendimiento por hectárea lechera: el denominador incluye todo el territorio, no la superficie de los tambos."),
   rem  = list(id = "rem", label = "Tenedores con venta a industria", short = "Remitentes",
               unit = "tenedores (números DICOSE)", unit_short = "tenedores", big = 1, big_unit = "tenedores",
-              desc = "Números DICOSE que declaran venta de leche a la industria. Se cuentan solo en ese destino: un mismo productor puede declarar varios destinos y no se suman entre sí.")
+              desc = "Números DICOSE que declaran venta de leche a la industria. Se cuentan solo en ese destino: un mismo productor puede declarar varios destinos y no se suman entre sí."),
+  vacas = list(id = "vacas", label = "Vacas lecheras", short = "Vacas", group = "rodeo",
+              unit = "vacas masa (en ordeñe + secas)", unit_short = "vacas", big = 1, big_unit = "vacas masa",
+              desc = "Vacas en ordeñe más vacas secas de los bovinos de leche que están en cada establecimiento, propias o ajenas: se cuentan donde se ordeñan, igual que sus litros."),
+  lpv = list(id = "lpv", label = "Litros por vaca", short = "L por vaca", group = "rodeo",
+              unit = "litros por vaca masa al año", unit_short = "L/vaca", big = 1, big_unit = "litros por vaca masa",
+              desc = sprintf("Producción del ejercicio dividida por las vacas masa (en ordeñe + secas). Solo se calcula donde hay al menos %d vacas; con menos queda sin dato. Mide productividad del rodeo, a diferencia de la densidad territorial.", MIN_VACAS),
+              cap = TRUE),
+  tambos = list(id = "tambos", label = "Tambos", short = "Tambos", group = "rodeo",
+              unit = "números DICOSE clasificados «Lecheros»", unit_short = "tambos", big = 1, big_unit = "tambos",
+              desc = sprintf("Números DICOSE que DIEA clasifica como productores lecheros según giro y uso del suelo. Cada tambo se cuenta una vez. La clasificación no se publica para %s: ese ejercicio figura sin dato, no como cero.",
+                             paste(setdiff(YEARS, TAMBO_YEARS), collapse = ", ")))
 )
 
 nice_ceiling <- function(x) {
@@ -411,8 +497,11 @@ make_scales <- function(v) {
     q <- stats::quantile(abs(chg), 0.9, na.rm = TRUE)
     lim <- c(10, 20, 25, 40, 50, 75, 100)[which(c(10, 20, 25, 40, 50, 75, 100) >= q)[1]]
     if (is.na(lim)) lim <- 100
-    out[[k]] <- list(max = nice_ceiling(max(x, na.rm = TRUE)), max_raw = max(x, na.rm = TRUE),
-                     chg_lim = lim)
+    # Indicadores con valores extremos por denominadores pequeños (litros por
+    # vaca): la escala se acota al percentil 98 y la leyenda lo indica («≥»).
+    top <- if (isTRUE(INDICATORS[[k]]$cap)) stats::quantile(x, 0.98, na.rm = TRUE) else max(x, na.rm = TRUE)
+    out[[k]] <- list(max = nice_ceiling(unname(top)), max_raw = max(x, na.rm = TRUE),
+                     chg_lim = lim, capped = isTRUE(INDICATORS[[k]]$cap))
   }
   out
 }
@@ -488,9 +577,9 @@ atlas <- list(
   checks = checks
 )
 saveRDS(atlas, file.path(DIR_DATA, "atlas.rds"), compress = "xz")
-write_csv(val_ae |> select(id, ejercicio, prod, venta, rem, dens, ends_with("_chg"), ends_with("_cmp")),
+write_csv(val_ae |> select(id, ejercicio, prod, venta, rem, dens, vacas, lpv, tambos, ends_with("_chg"), ends_with("_cmp")),
           file.path(DIR_DATA, "indicadores_areas_enumeracion.csv"), na = "")
-write_csv(val_dep |> select(id, ejercicio, prod, venta, rem, dens, ends_with("_chg"), ends_with("_cmp")) |>
+write_csv(val_dep |> select(id, ejercicio, prod, venta, rem, dens, vacas, lpv, tambos, ends_with("_chg"), ends_with("_cmp")) |>
             mutate(departamento = DEP_LABEL[as.integer(id)], .after = id),
           file.path(DIR_DATA, "indicadores_departamentos.csv"), na = "")
 write_csv(nacional, file.path(DIR_DATA, "indicadores_nacionales.csv"), na = "")

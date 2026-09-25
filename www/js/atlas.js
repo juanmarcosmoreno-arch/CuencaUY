@@ -170,6 +170,9 @@
     if (v === undefined || v === null) val = "sin datos";
     else if (k === "lluvia") val = (v > 0 ? "+" : v < 0 ? "−" : "") + fmt.format(Math.abs(v)) + " % vs. normal";
     else if (k === "thi") val = fmt.format(v) + (v === 1 ? " día" : " días");
+    else if (k === "vacas") val = fmt.format(v) + (v === 1 ? " vaca" : " vacas");
+    else if (k === "lpv") val = fmt.format(v) + " L/vaca";
+    else if (k === "tambos") val = fmt.format(v) + (v === 1 ? " tambo" : " tambos");
     else if (k === "prod" || k === "venta") val = v >= 1e6 ? fmt1.format(v / 1e6) + " M L" : fmt.format(v) + " L";
     else if (k === "dens") val = fmt.format(v) + " L/km²";
     else val = fmt.format(v) + (v === 1 ? " tenedor" : " tenedores");
@@ -179,6 +182,7 @@
       if (s === 0 && c !== null && c !== undefined) sub = (c > 0 ? "+" : c < 0 ? "−" : "") + fmt1.format(Math.abs(c)) + " % vs. " + (y - 1);
       else if (s === 1) sub = "Sin base de comparación";
       else if (s === 2) sub = "Sin producción";
+      else if (s === 4) sub = "Sin dato en este ejercicio";
       else sub = "Sin ejercicio anterior";
     }
     var name = S.level === "ae" ? p.name + " · " + p.dep_name : p.dep_name;

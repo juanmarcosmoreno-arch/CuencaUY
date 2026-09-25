@@ -44,7 +44,7 @@ Rscript scripts/run_pipeline.R            # usa la caché de data-raw/
 Rscript scripts/run_pipeline.R --refresh  # fuerza la nueva descarga
 ```
 
-El pipeline descarga las fuentes con caché, tiempo máximo y reintentos. Registra cada archivo en `data-raw/manifest.csv` (URL, fecha de descarga, ejercicio, estado preliminar o actualizado, MD5), valida los datos y regenera `data/`. Para incorporar un ejercicio nuevo (2026), añada su identificador del catálogo a `DICOSE_DATASETS` en `scripts/_common.R`.
+El pipeline descarga DICOSE, las series de INALE (remisión, precio al productor e IPC; `scripts/01b_download_inale.R` busca en la página de estadísticas las URL de cada mes) y la cartografía, siempre con caché, tiempo máximo y reintentos. Registra cada archivo en `data-raw/manifest.csv` (URL, fecha de descarga, ejercicio, estado preliminar o actualizado, MD5), valida los datos y regenera `data/`. Para incorporar un ejercicio nuevo (2026), añada su identificador del catálogo a `DICOSE_DATASETS` en `scripts/_common.R`.
 
 ### Pruebas
 
@@ -79,6 +79,9 @@ El detalle completo está en [`data/diagnostico.md`](data/diagnostico.md) (se re
 | Leche vendida | Destinos 1 + 2 + 10 | La venta a industria sola cubre entre el 79 y el 88 % de la remisión INALE, y la frontera con «cuota o reparto» cambia entre años (el tipo 1 pasa de 275 a 93 M L). El agregado es estable: entre 0,88 y 0,92 veces la remisión. |
 | Densidad territorial | Producción ÷ superficie total del área (km²) | Compara áreas de distinto tamaño. **No es rendimiento por hectárea lechera.** |
 | Tenedores con venta a industria | Números DICOSE con destino 2 | Se cuentan dentro de un único destino. No se suman tenedores de destinos distintos: un mismo productor figura en varios. |
+| Vacas lecheras | Vacas en ordeñe + secas (bovinos de leche) presentes en los establecimientos, propias o ajenas | Se cuentan donde se ordeñan, igual que sus litros. Contar solo las propias dejaba ≈ 4 % del rodeo («sin campo») sin área o en el área del dueño. El total nacional difiere < 1,5 % entre criterios. |
+| Litros por vaca | Producción ÷ vacas masa, solo con ≥ 50 vacas | Productividad del rodeo: 5.395 (2021) → 5.846 L/vaca (2025). La escala se acota al percentil 98 («≥» en la leyenda) porque algunas áreas con pocas vacas dan cocientes extremos. |
+| Tambos | Números DICOSE clasificados «Lecheros» por DIEA | Cada tambo cuenta una vez. La clasificación no se publica para 2021: ese ejercicio figura **sin dato**, en gris, distinto de cero. 2.958 (2022) → 2.856 (2025). |
 
 Cada indicador se puede ver como **magnitud** o como **variación anual**. La variación usa una escala divergente centrada en cero y distingue tres casos: «sin base de comparación» (el valor anterior es 0; nunca se muestra infinito), «sin producción» (0 en ambos ejercicios) y «sin ejercicio anterior».
 
@@ -106,6 +109,8 @@ Rscript scripts/05_graficas.R        # → docs/graficas/*.png (1080 × 1080) y 
 - `remision-por-ejercicio.png`: la misma serie de julio a junio, alineada con los ejercicios DICOSE.
 - `variacion-departamentos.png`: variación de la producción declarada 2021 → 2025 por departamento (DICOSE).
 - `clima-lluvia-y-remision.png` y `clima-panel-areas.png`: resultados del análisis climático (ver abajo).
+- `precio-y-remision.png`: variación de la remisión frente al precio real del ejercicio anterior.
+- `rodeo-y-tambos.png`: producción, vacas, litros por vaca y tambos, 2021–2025.
 
 DICOSE no publica producción mensual. Las series mensuales son **remisión a planta** (INALE), que equivale a ≈ 91–95 % de la producción, y así se rotulan.
 
@@ -131,6 +136,14 @@ En el atlas aparecen dos indicadores nuevos en «Clima». El **color** muestra e
 - **Lluvia del ejercicio:** lluvia acumulada de julio a junio de CHIRPS v2.0 (~5 km), promediada en cada polígono, en % respecto a la normal 1991–2020.
 - **Estrés térmico:** días con índice de temperatura y humedad (THI) medio ≥ 72, umbral habitual de estrés en vacas lecheras. Fuente: NASA POWER (MERRA-2, celdas de ~55 km); cada área toma la celda más cercana.
 
+### Precio de la leche
+
+El precio al productor en tambo de INALE ($/L con reliquidaciones) se deflacta por el IPC a pesos de 2025 y se promedia por ejercicio, ponderado por la remisión. Es la variable que sí se asocia con la remisión: la variación del precio real del **ejercicio anterior** explica parte de la variación de la remisión (r = 0,52, significativa con 22 ejercicios). El placebo con el precio del ejercicio siguiente da −0,18. En un modelo con precio y lluvia, +10 % de precio real se asocia con +1,6 % de remisión al año siguiente (IC 95 %: +0,7 a +2,4 %; R² = 0,28), y la lluvia no suma efecto.
+
+El IPC que publica INALE trae un valor inconsistente en mayo de 2026: repite el de mayo de 2025. Se detecta automáticamente (caída y rebote de más de 1,5 %) y se interpola entre abril y junio.
+
+![Precio y remisión](docs/graficas/precio-y-remision.png)
+
 ### Qué dice el análisis
 
 | Nivel | Diseño | Resultado |
@@ -139,7 +152,7 @@ En el atlas aparecen dos indicadores nuevos en «Clima». El **color** muestra e
 | Áreas, 2022–2025 | 228 áreas, 857 observaciones; cambio de producción contra la lluvia del área, con efectos fijos por ejercicio (absorben precios y shocks nacionales), ponderado por producción, errores agrupados por área | +10 puntos de lluvia → −1,4 % (IC 95 %: −3,4 a +0,6); ejercicio anterior −3,8 % (−10,5 a +2,9); placebo −1,2 % (−3,3 a +0,9) |
 | Mensual, 2003–2026 | Perfil de rezagos entre humedad del suelo y remisión | Solo descriptivo: las ventanas de 12 meses se solapan y el placebo no pasa |
 
-**Conclusión:** con los datos disponibles, el clima no explica de forma detectable los cambios de producción de leche. La sequía de 2022–23 (−42 % de lluvia en la cuenca) apenas movió la remisión anual (−0,8 %), y el ejercicio 2026, seco, tuvo remisión récord. Precios, costos y manejo (suplementación, reservas forrajeras) dominan la variación. Es un resultado nulo con poca potencia, no una prueba de ausencia de efecto: 5 ejercicios DICOSE, resoluciones gruesas para temperatura y asignación de cada declaración al padrón mayor. Asociación no es causalidad.
+**Conclusión:** con los datos disponibles, el clima no explica de forma detectable los cambios de producción de leche; el precio real del ejercicio anterior sí. La sequía de 2022–23 (−42 % de lluvia en la cuenca) apenas movió la remisión anual (−0,8 %), y el ejercicio 2026, seco, tuvo remisión récord. Precios, costos y manejo (suplementación, reservas forrajeras) dominan la variación. Es un resultado nulo con poca potencia, no una prueba de ausencia de efecto: 5 ejercicios DICOSE, resoluciones gruesas para temperatura y asignación de cada declaración al padrón mayor. Asociación no es causalidad.
 
 Fuentes: Funk et al. (2015), *CHIRPS v2.0*, Climate Hazards Center, UC Santa Barbara, vía IRI Data Library; NASA Langley Research Center, *POWER Project*. Otra fuente abierta útil para ampliar el análisis es INUMET, con estaciones en el Catálogo Nacional de Datos Abiertos.
 
