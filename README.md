@@ -2,7 +2,7 @@
 
 **Página del proyecto:** <https://juanmarcosmoreno-arch.github.io/milkmapR/>
 
-CuencaUY (antes «Atlas Lechero Uruguay») es un atlas digital en R/Shiny que muestra cómo cambia la geografía de la lechería uruguaya entre los ejercicios 2021 y 2025. Usa un mapa 3D en WebGL (mapgl + MapLibre) con los polígonos oficiales elevados según la magnitud del indicador. Los datos provienen de las declaraciones juradas DICOSE–SNIG del MGAP.
+CuencaUY es un atlas digital en R/Shiny que muestra cómo cambia la geografía de la lechería uruguaya entre los ejercicios 2021 y 2025. Usa un mapa 3D en WebGL (mapgl + MapLibre) con los polígonos oficiales elevados según la magnitud del indicador. Los datos provienen de las declaraciones juradas DICOSE–SNIG del MGAP.
 
 ![Vista de escritorio: producción 2025 por departamento](docs/capturas/escritorio.png)
 
