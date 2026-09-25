@@ -1,0 +1,117 @@
+{
+  "currentVersion": 11.5,
+  "cimVersion": "3.5.0",
+  "serviceDescription": "Areas de Enumeracion",
+  "mapName": "Layers",
+  "description": "Areas de Enumeracion",
+  "copyrightText": "",
+  "supportsDynamicLayers": true,
+  "layers": [
+    {
+      "id": 0,
+      "name": "SDE.SDE.FCAreaEnumeracion",
+      "parentLayerId": -1,
+      "defaultVisibility": true,
+      "subLayerIds": {},
+      "minScale": 0,
+      "maxScale": 0,
+      "type": "Feature Layer",
+      "geometryType": "esriGeometryPolygon",
+      "supportsDynamicLegends": true
+    }
+  ],
+  "tables": [],
+  "spatialReference": {
+    "wkid": 32721,
+    "latestWkid": 32721,
+    "xyTolerance": 0.001,
+    "zTolerance": 2,
+    "mTolerance": 0.001,
+    "falseX": -5120900,
+    "falseY": 1900,
+    "xyUnits": 450445547.3911,
+    "falseZ": 0,
+    "zUnits": 1,
+    "falseM": -100000,
+    "mUnits": 10000
+  },
+  "singleFusedMapCache": false,
+  "initialExtent": {
+    "xmin": 173347.5993,
+    "ymin": 6023682.7863,
+    "xmax": 1051486.7801,
+    "ymax": 6775982.7074,
+    "spatialReference": {
+      "wkid": 32721,
+      "latestWkid": 32721,
+      "xyTolerance": 0.001,
+      "zTolerance": 2,
+      "mTolerance": 0.001,
+      "falseX": -5120900,
+      "falseY": 1900,
+      "xyUnits": 450445547.3911,
+      "falseZ": 0,
+      "zUnits": 1,
+      "falseM": -100000,
+      "mUnits": 10000
+    }
+  },
+  "fullExtent": {
+    "xmin": 366582.2473,
+    "ymin": 6127927.1004,
+    "xmax": 858252.1321,
+    "ymax": 6671738.3933,
+    "spatialReference": {
+      "wkid": 32721,
+      "latestWkid": 32721,
+      "xyTolerance": 0.001,
+      "zTolerance": 2,
+      "mTolerance": 0.001,
+      "falseX": -5120900,
+      "falseY": 1900,
+      "xyUnits": 450445547.3911,
+      "falseZ": 0,
+      "zUnits": 1,
+      "falseM": -100000,
+      "mUnits": 10000
+    }
+  },
+  "datesInUnknownTimezone": false,
+  "minScale": 0,
+  "maxScale": 0,
+  "units": "esriMeters",
+  "supportedImageFormatTypes": "PNG32,PNG24,PNG,JPG,DIB,TIFF,EMF,PS,PDF,GIF,SVG,SVGZ,BMP",
+  "documentInfo": {
+    "Title": "",
+    "Author": "",
+    "Comments": "Areas de Enumeracion",
+    "Subject": "Areas de Enumeracion",
+    "Category": "",
+    "Version": "2.6.0",
+    "AntialiasingMode": "Fast",
+    "TextAntialiasingMode": "Force",
+    "Keywords": "Areas de Enumeracion"
+  },
+  "supportsQueryDomains": true,
+  "capabilities": "Query,Map,Data",
+  "supportedQueryFormats": "JSON, geoJSON, PBF",
+  "exportTilesAllowed": false,
+  "referenceScale": 0,
+  "supportsDatumTransformation": true,
+  "archivingInfo": {
+    "supportsHistoricMoment": false
+  },
+  "supportsClipping": true,
+  "supportsSpatialFilter": true,
+  "supportsTimeRelation": true,
+  "supportsQueryDataElements": true,
+  "mapUnits": {
+    "uwkid": 9001
+  },
+  "maxSelectionCount": 2000,
+  "maxRecordCount": 1000,
+  "maxImageHeight": 4096,
+  "maxImageWidth": 4096,
+  "supportedExtensions": "FeatureServer",
+  "serviceItemId": "6c7bc3bccfd64f17ad90ea4593f06361"
+}

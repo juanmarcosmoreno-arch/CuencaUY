@@ -175,7 +175,8 @@ atlas_ui <- function(atlas) {
       atlas_header(),
       tags$main(class = "stage", id = "stage",
         if (is.null(atlas)) empty_state() else tagList(
-          div(class = "map-wrap", maplibreOutput("map", height = "100%")),
+          # El mapa va primero en el apilado visual pero último en el orden de
+          # tabulación: los controles se recorren antes que el lienzo.
           controls_panel(atlas),
           tags$button(type = "button", class = "btn-icon panel-toggle", id = "btn-expand",
                       `aria-label` = "Mostrar panel de controles", `aria-controls` = "panel-left",
@@ -189,7 +190,8 @@ atlas_ui <- function(atlas) {
           div(class = "basemap-status surface", id = "basemap-status", role = "status",
               icon("triangle-alert"),
               span("Mapa base no disponible: se muestran las geometrías locales.")),
-          detail_panel()
+          detail_panel(),
+          div(class = "map-wrap", maplibreOutput("map", height = "100%"))
         )),
       if (!is.null(atlas)) timeline(atlas)
     )

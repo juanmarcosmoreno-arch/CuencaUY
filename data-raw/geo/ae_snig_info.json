@@ -1,10 +1,10 @@
 {
-  "currentVersion": 10.91,
-  "cimVersion": "2.9.0",
+  "currentVersion": 11.5,
+  "cimVersion": "3.5.0",
   "id": 0,
-  "name": "Límite Nacional Terrestre",
+  "name": "SDE.SDE.FCAreaEnumeracion",
   "type": "Feature Layer",
-  "description": "Unidades Administrativas - Límite Nacional Terrestre del Uruguay en escala 1:50.000",
+  "description": "",
   "geometryType": "esriGeometryPolygon",
   "sourceSpatialReference": {
     "wkid": 32721,
@@ -20,7 +20,21 @@
     "falseM": 0,
     "mUnits": 1
   },
-  "copyrightText": "IGM - https://srvgis.igm.gub.uy/arcgis/services/LimitesNacionalesTerrestres_wfs_50000/MapServer/WMSServer",
+  "spatialReference": {
+    "wkid": 32721,
+    "latestWkid": 32721,
+    "xyTolerance": 0.001,
+    "zTolerance": 2,
+    "mTolerance": 0.001,
+    "falseX": -5120900,
+    "falseY": 1900,
+    "xyUnits": 450445547.3911,
+    "falseZ": 0,
+    "zUnits": 1,
+    "falseM": -100000,
+    "mUnits": 10000
+  },
+  "copyrightText": "",
   "parentLayer": {},
   "subLayers": [],
   "minScale": 0,
@@ -33,21 +47,21 @@
         "type": "esriSFS",
         "style": "esriSFSSolid",
         "color": [
-          130,
-          130,
-          130,
-          0
+          201,
+          229,
+          245,
+          255
         ],
         "outline": {
           "type": "esriSLS",
           "style": "esriSLSSolid",
           "color": [
-            0,
-            0,
-            0,
+            110,
+            110,
+            110,
             255
           ],
-          "width": 2.2
+          "width": 0.4
         }
       }
     },
@@ -57,72 +71,92 @@
   },
   "defaultVisibility": true,
   "extent": {
-    "xmin": 361288.5454,
-    "ymin": 5801343.0457,
-    "xmax": 1116807.8327,
-    "ymax": 6671722.4593,
+    "xmin": 366582.2473,
+    "ymin": 6127927.1004,
+    "xmax": 858252.1321,
+    "ymax": 6671738.3933,
     "spatialReference": {
       "wkid": 32721,
       "latestWkid": 32721,
       "xyTolerance": 0.001,
-      "zTolerance": 0.001,
+      "zTolerance": 2,
       "mTolerance": 0.001,
       "falseX": -5120900,
       "falseY": 1900,
-      "xyUnits": 10000,
-      "falseZ": -100000,
-      "zUnits": 10000,
+      "xyUnits": 450445547.3911,
+      "falseZ": 0,
+      "zUnits": 1,
       "falseM": -100000,
       "mUnits": 10000
     }
   },
   "hasAttachments": false,
   "htmlPopupType": "esriServerHTMLPopupTypeAsHTMLText",
-  "displayField": "popup",
+  "displayField": "OBJECTID",
   "typeIdField": {},
   "subtypeFieldName": {},
   "subtypeField": {},
   "defaultSubtypeCode": {},
   "fields": [
     {
-      "name": "OBJECTID",
+      "name": "OBJECTID_1",
       "type": "esriFieldTypeOID",
+      "alias": "OBJECTID_1",
+      "domain": {}
+    },
+    {
+      "name": "OBJECTID",
+      "type": "esriFieldTypeInteger",
       "alias": "OBJECTID",
       "domain": {}
     },
     {
-      "name": "popup",
-      "type": "esriFieldTypeString",
-      "alias": "Información",
-      "length": 254,
+      "name": "CLAVE",
+      "type": "esriFieldTypeDouble",
+      "alias": "CLAVE",
       "domain": {}
     },
     {
-      "name": "area_km2",
-      "type": "esriFieldTypeInteger",
-      "alias": "Área en km2",
+      "name": "Shape_Leng",
+      "type": "esriFieldTypeDouble",
+      "alias": "Shape_Leng",
       "domain": {}
     },
     {
-      "name": "observ",
-      "type": "esriFieldTypeString",
-      "alias": "Observación",
-      "length": 254,
+      "name": "Shape",
+      "type": "esriFieldTypeGeometry",
+      "alias": "Shape",
       "domain": {}
     },
     {
-      "name": "limites",
-      "type": "esriFieldTypeString",
-      "alias": "Límites",
-      "length": 254,
+      "name": "Shape.STArea()",
+      "type": "esriFieldTypeDouble",
+      "alias": "Shape.STArea()",
+      "domain": {}
+    },
+    {
+      "name": "Shape.STLength()",
+      "type": "esriFieldTypeDouble",
+      "alias": "Shape.STLength()",
       "domain": {}
     }
   ],
-  "geometryField": {},
+  "geometryField": {
+    "name": "Shape",
+    "type": "esriFieldTypeGeometry",
+    "alias": "Shape"
+  },
   "indexes": [
     {
-      "name": "R34_pk",
-      "fields": "OBJECTID",
+      "name": "R738_pk",
+      "fields": "OBJECTID_1",
+      "isAscending": true,
+      "isUnique": true,
+      "description": ""
+    },
+    {
+      "name": "S689_idx",
+      "fields": "Shape",
       "isAscending": true,
       "isUnique": true,
       "description": ""
@@ -133,8 +167,9 @@
   "canModifyLayer": true,
   "canScaleSymbols": false,
   "hasLabels": false,
-  "capabilities": "Map,Query,Data",
-  "maxRecordCount": 2000,
+  "capabilities": "Query,Map,Data",
+  "maxRecordCount": 1000,
+  "maxSelectionCount": 2000,
   "supportsStatistics": true,
   "supportsExceedsLimitStatistics": true,
   "supportsAdvancedQueries": true,
@@ -143,7 +178,6 @@
   "ownershipBasedAccessControlForFeatures": {
     "allowOthersToQuery": true
   },
-  "useStandardizedQueries": true,
   "supportedSpatialRelationships": [
     "esriSpatialRelIntersects",
     "esriSpatialRelContains",
@@ -156,13 +190,15 @@
     "esriSpatialRelRelation"
   ],
   "advancedQueryCapabilities": {
-    "useStandardizedQueries": true,
+    "useStandardizedQueries": false,
     "supportsStatistics": true,
     "supportsPercentileStatistics": true,
     "supportsHavingClause": true,
     "supportsOrderBy": true,
     "supportsDistinct": true,
     "supportsCountDistinct": true,
+    "supportsAdvancedQueryRelated": true,
+    "supportsQueryRelatedPagination": true,
     "supportsPagination": true,
     "supportsLod": false,
     "supportsQueryWithLodSR": false,
@@ -172,8 +208,9 @@
     "supportsQueryWithDistance": true,
     "supportsSqlExpression": true,
     "supportsTimeRelation": true,
-    "supportsSqlFormat": false,
-    "supportsQueryAnalytic": true
+    "supportsSqlFormat": true,
+    "supportsQueryAnalytic": true,
+    "supportsCurrentUserQueries": true
   },
   "supportsDatumTransformation": true,
   "advancedQueryAnalyticCapabilities": {
@@ -188,7 +225,10 @@
   "geometryProperties": {
     "shapeAreaFieldName": "Shape.STArea()",
     "shapeLengthFieldName": "Shape.STLength()",
-    "units": "esriMeters"
+    "units": "esriMeters",
+    "mapUnits": {
+      "uwkid": 9001
+    }
   },
   "hasMetadata": true,
   "isDataArchived": false,
@@ -198,5 +238,5 @@
   },
   "supportsCoordinatesQuantization": true,
   "supportsDynamicLegends": true,
-  "serviceItemId": "8d038287c1d94698bd26445534a64f53"
+  "serviceItemId": "6c7bc3bccfd64f17ad90ea4593f06361"
 }

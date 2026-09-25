@@ -97,6 +97,13 @@ lines <- c(
   "- Tenedores: se cuentan dentro de un único destino (venta a industria). No existe en la fuente un total de productores únicos por área.",
   "- Asignación por padrón de mayor superficie: algunas áreas concentran producción de pocos declarantes (p. ej. 0601004, Durazno, ≈ 9 % del total).",
   "- Cartografía de AE vigente: los códigos son estables en 2021–2025, pero no hay capas históricas para verificar cambios de límite.",
+  {
+    sc <- a$snig_cmp
+    if (!is.null(sc) && "iou" %in% names(sc)) sprintf(
+      "- Dos versiones oficiales de los límites de AE (MGAP y SNIG) comparten códigos pero difieren en geometría: IoU mediana %s, %d de %d áreas con IoU < 0,8. Los valores no cambian (enlace por código); la densidad varía con la superficie (mediana |Δ| %s %%). Capa usada: %s.",
+      fmt(median(sc$iou, na.rm = TRUE), 2), sum(sc$iou < 0.8, na.rm = TRUE), sum(!is.na(sc$iou)),
+      fmt(median(abs(sc$dif_pct), na.rm = TRUE), 1), toupper(a$ae_source %||% "mgap")) else character(0)
+  },
   "- Caprinos (especie 4) excluidos: sin control de calidad según los metadatos.",
   "",
   sprintf("Controles: %d de preparación y %d independientes; fallidos: %d.",

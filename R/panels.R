@@ -248,6 +248,7 @@ about_modal <- function(atlas) {
     p("No se usa el recurso «Producción de leche en establecimiento»: sus litros son los industrializados en el predio (queso, manteca…). Coinciden con el destino 3 ya incluido en la producción."),
     h3("Territorio"),
     p("Áreas de enumeración de DIEA (MGAP, SNIA — Unidades Estadísticas), 637 polígonos con código CCOMPAE de 7 dígitos: departamento (INE), área de supervisión y área. Los códigos de las tablas pierden el cero inicial y se normalizan como texto de 7 dígitos. El 100 % de las áreas con leche tiene polígono en los cinco ejercicios. Los códigos de departamento DICOSE (Montevideo = 10) se traducen a la nomenclatura INE por nombre."),
+    p("El SNIG publica otra versión de la misma cartografía (MapasBase/AAEE), con los mismos códigos pero límites digitalizados de forma distinta: la intersección sobre la unión mediana por área es 0,91 y las superficies difieren un 3 % en la mediana. Los valores no cambian, porque se enlazan por código. Sí cambian el dibujo y el denominador de la densidad. El atlas usa la capa del MGAP; el pipeline puede regenerarse con la del SNIG (ATLAS_AE_SOURCE=snig)."),
     p("Límites departamentales: MGAP, SNIA — Unidades Administrativas. El recurso del catálogo indicado inicialmente responde 404. Se excluye el polígono «Límite contestado»."),
     if (!is.null(inale)) tagList(
       h3("Contraste con INALE"),
@@ -277,7 +278,8 @@ about_modal <- function(atlas) {
     h3("Controles de validación"),
     p(sprintf("%d de %d controles superados al preparar los datos (%s).", ok, length(chk), atlas$version)),
     tags$details(tags$summary("Ver controles"),
-                 tags$ul(lapply(chk, function(c) tags$li(if (c$ok) "✓ " else "✗ ", c$detalle)))),
+                 tags$ul(lapply(chk, function(c) tags$li(
+                   if (identical(c$nivel, "aviso")) "⚠ " else if (c$ok) "✓ " else "✗ ", c$detalle)))),
     h3("Mapa base"),
     p("Teselas vectoriales de OpenFreeMap (sin clave), © OpenMapTiles, datos © colaboradores de OpenStreetMap. Requieren conexión a internet; sin ella, el atlas se muestra sobre un fondo liso con sus geometrías locales. Tipografía Inter (SIL OFL) e iconos Lucide (ISC), servidos localmente.")
   )

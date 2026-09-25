@@ -56,9 +56,12 @@ test_that("las expresiones de estilo son válidas y usan escala fija", {
   expect_equal(ec[[1]], "match")
   expect_equal(height_expr("prod", 2024, 8e8, dim = "2d"), 0)
   h <- height_expr("prod", 2024, 8e8, "sqrt")
-  expect_equal(h[[2]][[1]], "sqrt")
-  # misma escala para todos los años
-  expect_identical(height_expr("prod", 2021, 8e8)[[3]], height_expr("prod", 2025, 8e8)[[3]])
+  expect_equal(h[[1]], "interpolate")
+  expect_equal(h[[3]], list("zoom"))
+  expect_equal(h[[5]][[2]][[2]][[1]], "sqrt")
+  # misma escala para todos los años: solo cambia la propiedad leída
+  h21 <- height_expr("prod", 2021, 8e8); h25 <- height_expr("prod", 2025, 8e8)
+  expect_identical(h21[[5]][[2]][[3]], h25[[5]][[2]][[3]])
 })
 
 test_that("el servidor responde a año, indicador y selección", {

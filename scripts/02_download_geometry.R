@@ -1,9 +1,9 @@
 # Descarga la cartografía oficial y guarda los originales sin simplificar en
 # data-raw/geo/:
 #   1. Áreas de enumeración (AE) — MGAP/DIEA, SNIA Temas › Unidades Estadísticas, capa 5.
-#   2. AE — servicio alternativo del SNIG (MapasBase/AAEE), para contraste.
-#   3. Límites departamentales y límite nacional terrestre — MGAP, SNIA Temas ›
-#      UnidadesAdministrativas, capas 1 y 0.
+#   2. AE — servicio alternativo del SNIG (MapasBase/AAEE), para contraste de
+#      códigos y límites en 03_prepare.R.
+#   3. Límites departamentales — MGAP, SNIA Temas › UnidadesAdministrativas, capa 1.
 #   4. Límites departamentales del Catálogo Nacional de Datos Abiertos (recurso
 #      3c1b430a…). En septiembre de 2026 el recurso responde 404; se intenta
 #      igualmente y el resultado queda registrado en el manifiesto.
@@ -25,8 +25,7 @@ MGAP_SNIA <- "https://mapas.mgap.gub.uy/arcgis/rest/services/SNIA_Temas"
 LAYERS <- tibble::tribble(
   ~id,             ~url,                                                             ~titulo,
   "ae_mgap",       paste0(MGAP_SNIA, "/Unidades_Estad%C3%ADsticas/MapServer/5"),     "MGAP SNIA — Unidades Estadísticas: Áreas de Enumeración (AE)",
-  "departamentos", paste0(MGAP_SNIA, "/UnidadesAdministrativas/MapServer/1"),        "MGAP SNIA — Unidades Administrativas: Límites Departamentales",
-  "limite_nacional", paste0(MGAP_SNIA, "/UnidadesAdministrativas/MapServer/0"),      "MGAP SNIA — Unidades Administrativas: Límite Nacional Terrestre"
+  "departamentos", paste0(MGAP_SNIA, "/UnidadesAdministrativas/MapServer/1"),        "MGAP SNIA — Unidades Administrativas: Límites Departamentales"
 )
 AE_SNIG   <- "https://web.snig.gub.uy/arcgisserver/rest/services/MapasBase/AAEE/MapServer"
 DEPTO_PKG <- "9bfa6e97-f40f-437e-aa13-a3406c50f762"

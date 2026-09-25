@@ -1,0 +1,23 @@
+Type: project
+Title: Atlas Lechero Uruguay
+Description: Atlas digital de la producción de leche en Uruguay a partir de las
+    declaraciones juradas DICOSE-SNIG (MGAP), con mapa 3D en Shiny y mapgl.
+Depends:
+    R (>= 4.3)
+Imports:
+    shiny,
+    bslib,
+    mapgl,
+    sf,
+    dplyr,
+    tidyr,
+    readr,
+    readxl,
+    httr2,
+    jsonlite,
+    ggplot2,
+    rmapshaper,
+    geojsonsf
+Suggests:
+    testthat,
+    renv

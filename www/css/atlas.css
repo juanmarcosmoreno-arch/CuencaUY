@@ -129,7 +129,7 @@ body { overflow: hidden; }
 .header-meta { display: flex; align-items: center; gap: 8px; }
 
 .stage { position: relative; overflow: hidden; }
-.map-wrap { position: absolute; inset: 0; background: #EEF0EC; }
+.map-wrap { position: absolute; inset: 0; background: #EEF0EC; z-index: 0; }
 .map-wrap > .html-widget, .map-wrap .maplibregl-map { width: 100% !important; height: 100% !important; }
 
 /* Botones -------------------------------------------------------------- */
@@ -487,7 +487,7 @@ body { overflow: hidden; }
   .kpi-value { font-size: 15px; }
   .kpi-delta { display: none; }
   .map-controls { right: var(--gap) !important; }
-  .legend { right: var(--gap) !important; left: auto; width: 200px; bottom: calc(var(--gap)); padding: 8px 10px; }
+  .legend { right: var(--gap) !important; left: auto; width: 200px; bottom: calc(var(--gap) + 22px); padding: 8px 10px; }
   .legend-note { display: none; }
 
   .timeline { gap: 8px; padding: 0 8px; }

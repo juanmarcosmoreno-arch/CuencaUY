@@ -206,18 +206,30 @@
 
     // Si las teselas, tipografías o íconos del mapa base fallan, se avisa y se
     // oculta el mapa base; las geometrías del atlas son locales.
+    // Un error aislado de tesela (p. ej. al mover rápido la cámara) no basta:
+    // se exige que la fuente nunca haya cargado o una racha de errores.
+    var tileErrors = 0;
     map.on("error", function (e) {
-      var msg = (e && e.error && (e.error.message || e.error.status)) + "";
+      var err = e && e.error;
+      var msg = (err && (err.message || err.status)) + "";
+      if (err && err.name === "AbortError" || /abort/i.test(msg)) return;
       var src = e && e.sourceId;
       if (src === "openmaptiles" || /openfreemap|glyph|sprite|Failed to fetch|NetworkError/i.test(msg)) {
-        basemapFailed();
+        tileErrors++;
+        var loaded = false;
+        try { loaded = map.isSourceLoaded("openmaptiles"); } catch (x) { /* sin fuente */ }
+        if (tileErrors >= 12 || (!loaded && tileErrors >= 4 && !S.basemapSeen)) basemapFailed();
       }
     });
+    map.on("sourcedata", function (e) {
+      if (e.sourceId === "openmaptiles" && e.isSourceLoaded) S.basemapSeen = true;
+    });
+    // Si en 15 s ninguna tesela del mapa base llegó a cargar, se considera caído.
     setTimeout(function () {
       try {
-        if (map.getSource("openmaptiles") && !map.isSourceLoaded("openmaptiles")) basemapFailed();
+        if (map.getSource("openmaptiles") && !S.basemapSeen) basemapFailed();
       } catch (err) { /* estilo sin mapa base */ }
-    }, 12000);
+    }, 15000);
 
     map.on("load", function () { fitHome(false); });
     if (map.loaded()) fitHome(false);
@@ -286,7 +298,7 @@
     setInput("atlas_select", { id: r.id, level: r.level, t: Date.now() }, true);
     if (S.map && r.bbox) {
       S.map.fitBounds([[r.bbox[0], r.bbox[1]], [r.bbox[2], r.bbox[3]]], {
-        padding: cameraPadding(), maxZoom: r.level === "dep" ? 8 : 9.5,
+        padding: cameraPadding(), maxZoom: r.level === "dep" ? 7.6 : 8.6,
         pitch: S.dim === "3d" ? PITCH_3D : 0, bearing: S.map.getBearing(), duration: 900
       });
     }
@@ -329,7 +341,17 @@
       var was = S.detailOpen;
       S.detailOpen = !!m.open;
       $("#atlas").classList.toggle("detail-open", S.detailOpen);
-      if (S.detailOpen && isMobile()) toggleSheet(false);
+      if (S.detailOpen && isMobile()) {
+        toggleSheet(false);
+        // La hoja de detalle cubre la mitad inferior: se sube la vista para que
+        // la zona elegida quede visible encima.
+        if (!was && S.map) {
+          setTimeout(function () {
+            var d = $("#panel-detail");
+            if (d) S.map.panBy([0, Math.round(d.offsetHeight / 2)], { duration: 450 });
+          }, 320);
+        }
+      }
       if (S.detailOpen && !was) {
         setTimeout(function () { var c = $("#btn-close-detail"); if (c && !isMobile()) c.focus({ preventScroll: true }); }, 350);
       }

@@ -50,14 +50,21 @@ build_search_index <- function(atlas) {
 prop_name <- function(ind, year, suffix = "") sprintf("%s_%d%s", ind, year, suffix)
 
 # Altura: magnitud del indicador (escala fija por indicador y nivel). En 2D, 0.
+# La extrusión se reduce al acercar la cámara (multiplicador por zoom) para que
+# las zonas altas no tapen el entorno cuando se inspecciona un área de cerca.
+ZOOM_FACTOR <- list(c(6.5, 1), c(8, 0.42), c(10, 0.13), c(12, 0.045))
+
 height_expr <- function(ind, year, max, transform = "linear", dim = "3d") {
   if (dim == "2d") return(0)
   v <- list("to-number", list("get", prop_name(ind, year)), 0)
-  if (transform == "sqrt") {
+  base <- if (transform == "sqrt") {
     list("*", list("sqrt", v), H_MAX / sqrt(max))
   } else {
     list("*", v, H_MAX / max)
   }
+  e <- list("interpolate", list("linear"), list("zoom"))
+  for (zf in ZOOM_FACTOR) e <- c(e, list(zf[1], list("*", base, zf[2])))
+  e
 }
 
 # Paradas de color fijas (lineal o raíz cuadrada) sobre [0, max].

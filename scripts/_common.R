@@ -38,7 +38,9 @@ msg <- function(...) cat(format(Sys.time(), "[%H:%M:%S] "), ..., "\n", sep = "")
 
 # Petición base: tiempo máximo, reintentos con espera exponencial y agente propio.
 base_request <- function(url, timeout = 120) {
+  # HTTP/1.1 explícito: el servidor ArcGIS del SNIG corta las conexiones HTTP/2.
   request(url) |>
+    req_options(http_version = 2L) |>
     req_user_agent(USER_AGENT) |>
     req_timeout(timeout) |>
     req_retry(max_tries = 4, backoff = function(i) 2^i)

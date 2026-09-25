@@ -1,6 +1,6 @@
 # Diagnóstico de datos — Atlas Lechero Uruguay
 
-Generado: 2026-09-25 06:39 · atlas.rds: 2026-09-25
+Generado: 2026-09-25 06:53 · atlas.rds: 2026-09-25
 
 ## Años disponibles
 
@@ -43,6 +43,7 @@ Generado: 2026-09-25 06:39 · atlas.rds: 2026-09-25
 - Tenedores: se cuentan dentro de un único destino (venta a industria). No existe en la fuente un total de productores únicos por área.
 - Asignación por padrón de mayor superficie: algunas áreas concentran producción de pocos declarantes (p. ej. 0601004, Durazno, ≈ 9 % del total).
 - Cartografía de AE vigente: los códigos son estables en 2021–2025, pero no hay capas históricas para verificar cambios de límite.
+- Dos versiones oficiales de los límites de AE (MGAP y SNIG) comparten códigos pero difieren en geometría: IoU mediana 0,91, 112 de 634 áreas con IoU < 0,8. Los valores no cambian (enlace por código); la densidad varía con la superficie (mediana |Δ| 3,1 %). Capa usada: MGAP.
 - Caprinos (especie 4) excluidos: sin control de calidad según los metadatos.
 
-Controles: 48 de preparación y 23 independientes; fallidos: 0.
+Controles: 50 de preparación y 23 independientes; fallidos: 0.

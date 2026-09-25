@@ -21,9 +21,10 @@ man <- read_manifest()
 if (is.null(man)) stop("Falta data-raw/manifest.csv: ejecute primero 01 y 02.")
 
 checks <- list()
-check <- function(id, ok, detalle) {
-  checks[[length(checks) + 1]] <<- list(id = id, ok = isTRUE(ok), detalle = detalle)
-  msg(if (isTRUE(ok)) "  ✓ " else "  ✗ ", id, " — ", detalle)
+# nivel = "aviso": diferencia documentada que no invalida los datos.
+check <- function(id, ok, detalle, nivel = "control") {
+  checks[[length(checks) + 1]] <<- list(id = id, ok = isTRUE(ok), detalle = detalle, nivel = nivel)
+  msg(if (nivel == "aviso") "  ⚠ " else if (isTRUE(ok)) "  ✓ " else "  ✗ ", id, " — ", detalle)
 }
 
 # Utilidades ---------------------------------------------------------------
@@ -66,7 +67,21 @@ resource_path <- function(year, name_exact) {
 
 # 1. Cartografía -------------------------------------------------------------
 msg("Cartografía")
+# Capa de AE a dibujar: MGAP (por defecto) o SNIG (ATLAS_AE_SOURCE=snig). Ambas
+# comparten códigos; los límites están digitalizados de forma distinta.
+AE_SOURCE <- tolower(Sys.getenv("ATLAS_AE_SOURCE", "mgap"))
 ae_raw  <- st_read(file.path(DIR_RAW, "geo", "ae_mgap.geojson"), quiet = TRUE)
+if (AE_SOURCE == "snig") {
+  sn <- st_read(file.path(DIR_RAW, "geo", "ae_snig.geojson"), quiet = TRUE) |>
+    filter(as.integer(CLAVE) > 0)
+  code <- sprintf("%07d", as.integer(sn$CLAVE))
+  names_by_dep <- st_drop_geometry(ae_raw) |> distinct(DEPTO, NOMDEPTO)
+  ae_raw <- sn |> transmute(
+    CCOMPAE = as.integer(CLAVE), DEPTO = as.integer(substr(code, 1, 2)),
+    CCOMPAS = as.integer(substr(code, 1, 4)), AREAENUM = as.integer(substr(code, 5, 7))) |>
+    left_join(names_by_dep, by = "DEPTO")
+}
+msg("  Capa de áreas de enumeración: ", toupper(AE_SOURCE))
 dep_raw <- st_read(file.path(DIR_RAW, "geo", "departamentos.geojson"), quiet = TRUE)
 
 # Nomenclatura INE (la usa la cartografía y el prefijo de los códigos de AE).
@@ -87,12 +102,13 @@ ae <- ae_raw |>
     as_code  = sprintf("%04d", as.integer(CCOMPAS)),
     ae_num   = sprintf("%03d", as.integer(AREAENUM))
   )
+ae <- ae |> group_by(id, dep, as_code, ae_num) |> summarise(.groups = "drop")
 check("ae_codigos_unicos", !anyDuplicated(ae$id),
       sprintf("%d polígonos, %d códigos CCOMPAE distintos", nrow(ae), n_distinct(ae$id)))
 check("ae_prefijo_departamento", all(substr(ae$id, 1, 2) == ae$dep),
       "Los dos primeros dígitos del código de AE coinciden con el departamento (nomenclatura INE)")
 check("ae_nombre_departamento",
-      all(dep_code_ine(ae_raw$NOMDEPTO) == ae$dep),
+      all(dep_code_ine(ae_raw$NOMDEPTO) == sprintf("%02d", as.integer(ae_raw$DEPTO))),
       "El nombre de departamento de cada AE corresponde a su código INE")
 n_invalid <- sum(!st_is_valid(ae))
 ae <- st_make_valid(ae) |> st_collection_extract("POLYGON") |>
@@ -122,6 +138,46 @@ rural <- area_cmp$id != "01"
 check("ae_cubren_departamentos", all(abs(area_cmp$dif_pct[rural]) < 7),
       sprintf("Superficie AE agregadas vs. límites oficiales: máx. %.1f %% fuera de Montevideo (embalses); Montevideo %.0f %% (solo zona rural)",
               max(abs(area_cmp$dif_pct[rural])), area_cmp$dif_pct[!rural]))
+
+# Contraste con la capa alternativa del SNIG (misma cartografía de DIEA publicada
+# por otro servicio): conjunto de códigos y superficie de cada área.
+ae_mgap_geom <- function() {
+  st_read(file.path(DIR_RAW, "geo", "ae_mgap.geojson"), quiet = TRUE) |>
+    transmute(id = sprintf("%07d", as.integer(CCOMPAE))) |> st_make_valid() |>
+    group_by(id) |> summarise(.groups = "drop")
+}
+snig_path <- file.path(DIR_RAW, "geo", "ae_snig.geojson")
+snig_cmp <- NULL
+if (file.exists(snig_path)) {
+  snig <- st_read(snig_path, quiet = TRUE) |>
+    filter(as.integer(CLAVE) > 0) |>
+    mutate(id = sprintf("%07d", as.integer(CLAVE))) |>
+    st_make_valid()
+  snig$km2 <- as.numeric(st_area(st_transform(snig, 32721))) / 1e6
+  snig_a <- st_drop_geometry(snig) |> group_by(id) |> summarise(snig_km2 = sum(km2))
+  snig_cmp <- st_drop_geometry(ae) |> select(id, area_km2) |>
+    full_join(snig_a, by = "id") |>
+    mutate(dif_pct = 100 * (snig_km2 - area_km2) / area_km2)
+  solo_mgap <- sum(is.na(snig_cmp$snig_km2)); solo_snig <- sum(is.na(snig_cmp$area_km2))
+  check("ae_mgap_vs_snig_codigos", solo_snig == 0,
+        sprintf("Códigos AE: %d en ambas capas, %d solo en MGAP, %d solo en SNIG",
+                sum(!is.na(snig_cmp$dif_pct)), solo_mgap, solo_snig))
+  # Coincidencia geométrica por código: intersección / unión (IoU).
+  m_utm <- st_transform(ae_mgap_geom(), 32721)
+  s_utm <- snig |> group_by(id) |> summarise() |> st_transform(32721)
+  common <- intersect(m_utm$id, s_utm$id)
+  iou <- vapply(common, function(i) {
+    a <- st_geometry(m_utm[m_utm$id == i, ]); b <- st_geometry(s_utm[s_utm$id == i, ])
+    inter <- as.numeric(sum(st_area(st_intersection(a, b))))
+    inter / (as.numeric(sum(st_area(a))) + as.numeric(sum(st_area(b))) - inter)
+  }, numeric(1))
+  snig_cmp$iou <- unname(iou[snig_cmp$id])
+  check("ae_mgap_vs_snig_geometria", TRUE, nivel = "aviso",
+        sprintf("Límites de AE distintos entre MGAP y SNIG: IoU mediana %.2f; %d de %d AE con IoU < 0,8; superficie: mediana |Δ| %.1f %%. Los valores se enlazan por código; cambian el dibujo y el denominador de la densidad.",
+                median(iou), sum(iou < 0.8), length(iou), median(abs(snig_cmp$dif_pct), na.rm = TRUE)))
+} else {
+  msg("  (capa SNIG no disponible: se omite el contraste de límites)")
+}
 
 # Simplificación con preservación de topología (mapshaper). Los originales
 # quedan intactos en data-raw/geo/.
@@ -426,6 +482,8 @@ atlas <- list(
   establecimiento = est_cmp,
   meta_litros = meta_litros,
   area_cmp = area_cmp,
+  snig_cmp = snig_cmp,
+  ae_source = AE_SOURCE,
   sources = sources,
   checks = checks
 )
