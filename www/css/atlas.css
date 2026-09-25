@@ -230,6 +230,8 @@ body { overflow: hidden; }
 }
 .choice-title { display: block; font-size: 13.5px; font-weight: 600; }
 .choice-sub { display: block; font-size: 12px; color: var(--ink-2); margin-top: 1px; }
+.choice-sep { margin: 10px 0 0; padding-top: 12px; border-top: 1px solid var(--line); font-size: 12.5px; font-weight: 600; }
+.choice-sep-sub { display: block; font-weight: 450; color: var(--ink-2); font-size: 11.5px; margin-top: 1px; }
 .choice input:checked + .choice-box { border-color: var(--brand); box-shadow: inset 0 0 0 1px var(--brand); background: #FBFDFC; }
 .choice input:focus-visible + .choice-box { outline: 2px solid var(--focus); outline-offset: 2px; }
 .choice:hover .choice-box { border-color: var(--line-strong); }

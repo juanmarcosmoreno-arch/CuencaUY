@@ -42,8 +42,24 @@ kpis_ui <- function(atlas, year) {
   )
 }
 
+climate_finding <- function(atlas) {
+  cl <- atlas$clima
+  if (is.null(cl) || is.null(cl$panel_areas)) return(NULL)
+  pa <- cl$panel_areas$coefs[cl$panel_areas$coefs$termino == "lluvia_anom", ]
+  na <- cl$nacional_anual$datos
+  p(strong("¿Explica el clima la producción?"), paste0(
+    " No de forma detectable en 2021–2025. Comparando áreas dentro de cada ejercicio, +10 puntos de lluvia se asocian con ",
+    fmt_pct(10 * pa$estimado, 1), " de producción (IC 95 %: ", fmt_pct(10 * pa$lo, 1), " a ", fmt_pct(10 * pa$hi, 1),
+    "). A escala nacional, ", min(na$ejercicio[!is.na(na$d_rem)]), "–", max(na$ejercicio),
+    ", tampoco hay asociación significativa. Ver «Fuentes y método»."))
+}
+
 metric_note_ui <- function(atlas, ind_id, level) {
   ind <- atlas$indicators[[ind_id]]
+  if (is_climate(ind_id)) {
+    return(tagList(p(strong(ind$label), " — ", ind$desc), climate_finding(atlas),
+                   p("Asociación no es causalidad: precios, costos y decisiones de manejo pesan en la producción.")))
+  }
   lvl <- if (level == "ae") {
     "Las áreas de enumeración (DIEA) ubican cada establecimiento en el área de su mayor padrón declarado. Los establecimientos sin padrón en el catastro rural quedan sin área y solo cuentan en los departamentos."
   } else {
@@ -59,6 +75,26 @@ metric_note_ui <- function(atlas, ind_id, level) {
 legend_ui <- function(atlas, ind_id, level, year, mode, transform, dim) {
   ind <- atlas$indicators[[ind_id]]
   sc <- atlas$scales[[level]][[ind_id]]
+  if (is_climate(ind_id)) {
+    pal <- if (ind_id == "lluvia") PAL_DIV else PAL_THI
+    stops <- seq(0, 1, length.out = length(pal))
+    grad <- paste(sprintf("%s %.0f%%", pal, 100 * stops), collapse = ", ")
+    ticks <- if (ind_id == "lluvia") {
+      div(class = "legend-ticks num", span("≤ −50 %"), span("normal"), span("≥ +50 %"))
+    } else {
+      div(class = "legend-ticks num", span("0"), span(fmt_int(sc$max / 2)), span(paste(fmt_int(sc$max), "días")))
+    }
+    hs <- atlas$scales[[level]]$prod
+    return(tagList(
+      div(class = "legend-title", ind$label, " ", span(class = "legend-unit", paste0("(", ind$big_unit, ")"))),
+      div(class = "legend-ramp", style = sprintf("background: linear-gradient(90deg, %s)", grad)),
+      ticks,
+      if (ind_id == "lluvia") div(class = "legend-extra", span("Terracota: más seco"), span("Verde azulado: más húmedo")),
+      div(class = "legend-note",
+          if (dim == "3d") sprintf("Altura: producción de leche (escala fija, máx. %s M L). ", fmt_num(hs$max / 1e6, 0)) else "Vista 2D: sin extrusión. ",
+          if (ind_id == "lluvia") "Fuente: CHIRPS v2.0." else "Fuente: NASA POWER (celdas de ~55 km).")
+    ))
+  }
   if (mode == "value") {
     stops <- seq(0, 1, length.out = length(PAL_SEQ))
     grad <- paste(sprintf("%s %.0f%%", PAL_SEQ, 100 * stops), collapse = ", ")
@@ -111,14 +147,33 @@ legend_ui <- function(atlas, ind_id, level, year, mode, transform, dim) {
 zone_series <- function(atlas, level, id, ind_id) {
   v <- atlas$values[[level]]
   v <- v[v$id == id, ]
+  chg <- v[[paste0(ind_id, "_chg")]] %||% rep(NA_real_, nrow(v))
+  cmp <- v[[paste0(ind_id, "_cmp")]] %||% rep(NA_character_, nrow(v))
   data.frame(ejercicio = atlas$years_all) |>
-    dplyr::left_join(data.frame(ejercicio = v$ejercicio, value = v[[ind_id]],
-                                chg = v[[paste0(ind_id, "_chg")]],
-                                cmp = v[[paste0(ind_id, "_cmp")]]), by = "ejercicio")
+    dplyr::left_join(data.frame(ejercicio = v$ejercicio, value = v[[ind_id]], chg = chg, cmp = cmp,
+                                prod = v$prod, lluvia_mm = v$lluvia_mm %||% NA), by = "ejercicio")
 }
 
 detail_plot <- function(s, year, ind) {
   s$cur <- s$ejercicio == year
+  if (ind$id == "lluvia") {
+    s$sign <- ifelse(is.na(s$value), NA, ifelse(s$value < 0, "seco", "humedo"))
+    return(ggplot2::ggplot(s, ggplot2::aes(x = factor(ejercicio), y = value)) +
+      ggplot2::geom_hline(yintercept = 0, colour = "#B9C4BE", linewidth = 0.4) +
+      ggplot2::geom_col(ggplot2::aes(fill = sign, alpha = cur), width = 0.62, na.rm = TRUE) +
+      ggplot2::scale_fill_manual(values = c(seco = "#C8845D", humedo = "#57A3A1"), guide = "none") +
+      ggplot2::scale_alpha_manual(values = c(`TRUE` = 1, `FALSE` = 0.5), guide = "none") +
+      ggplot2::scale_y_continuous(labels = function(x) paste0(fmt_num(x, 0), " %"), n.breaks = 4) +
+      ggplot2::labs(x = NULL, y = NULL, subtitle = "% respecto a 1991–2020") +
+      ggplot2::theme_minimal(base_size = 11) +
+      ggplot2::theme(panel.grid.major.x = ggplot2::element_blank(), panel.grid.minor = ggplot2::element_blank(),
+                     panel.grid.major.y = ggplot2::element_line(colour = "#E7ECE8", linewidth = 0.4),
+                     axis.text = ggplot2::element_text(colour = "#667773"),
+                     plot.subtitle = ggplot2::element_text(colour = "#667773", size = 9),
+                     plot.margin = ggplot2::margin(4, 6, 0, 0),
+                     plot.background = ggplot2::element_rect(fill = "transparent", colour = NA),
+                     panel.background = ggplot2::element_rect(fill = "transparent", colour = NA)))
+  }
   div <- if (ind$id %in% c("prod", "venta")) 1e6 else 1
   s$y <- s$value / div
   ylab <- if (div == 1e6) "M L" else ind$unit_short
@@ -160,6 +215,7 @@ detail_ui <- function(atlas, level, id, ind_id, year) {
   s <- zone_series(atlas, level, id, ind_id)
   cur <- s[s$ejercicio == year, ]
   nat <- atlas$national[atlas$national$ejercicio == year, ]
+  climate <- is_climate(ind_id)
   share <- if (ind_id %in% c("prod", "venta", "rem")) {
     tot <- nat[[ind_id]]
     if (!is.na(cur$value) && tot > 0) paste0(fmt_num(100 * cur$value / tot, 1), " % del total nacional") else NULL
@@ -187,10 +243,14 @@ detail_ui <- function(atlas, level, id, ind_id, year) {
     div(class = "detail-body",
       div(class = "detail-stats",
           div(class = "detail-stat",
-              div(class = "kpi-label", paste(ind$short, year)),
+              div(class = "kpi-label", if (ind_id == "lluvia") paste("Lluvia", year, "vs. normal") else paste(ind$short, year)),
               div(class = "kpi-value num", fmt_value(cur$value, ind)),
               if (!is.null(share)) div(class = "kpi-delta num", share)),
-          div(class = "detail-stat",
+          if (climate) div(class = "detail-stat",
+              div(class = "kpi-label", paste("Producción", year)),
+              div(class = "kpi-value num", fmt_value(cur$prod, atlas$indicators$prod)),
+              if (ind_id == "lluvia" && !is.na(cur$lluvia_mm)) div(class = "kpi-delta num", paste(fmt_int(cur$lluvia_mm), "mm de lluvia")))
+          else div(class = "detail-stat",
               div(class = "kpi-label", "Cambio anual"),
               div(class = paste("kpi-value num"),
                   if (identical(cur$cmp, "ok")) fmt_pct(cur$chg) else "—"),
@@ -200,9 +260,14 @@ detail_ui <- function(atlas, level, id, ind_id, year) {
           div(class = "detail-plot", plotOutput("detail_plot", height = "150px"))),
       div(class = "detail-section",
           tags$table(class = "detail-table",
-            tags$thead(tags$tr(tags$th("Ejercicio"), tags$th(ind$short), tags$th("Variación"))),
+            tags$thead(tags$tr(tags$th("Ejercicio"), tags$th(ind$short),
+                               tags$th(if (climate) "Producción" else "Variación"))),
             tags$tbody(lapply(seq_len(nrow(s)), function(i) {
               r <- s[i, ]
+              if (climate) return(tags$tr(class = if (r$ejercicio == year) "is-current",
+                tags$td(class = "num", r$ejercicio),
+                tags$td(class = "num", if (is.na(r$value)) "—" else if (ind_id == "lluvia") fmt_pct(r$value, 0) else fmt_int(r$value)),
+                tags$td(class = "num", fmt_value(r$prod, atlas$indicators$prod))))
               tags$tr(class = if (r$ejercicio == year) "is-current",
                       tags$td(class = "num", r$ejercicio),
                       tags$td(class = "num", if (is.na(r$value)) "sin datos" else fmt_value(r$value, ind)),
@@ -219,7 +284,9 @@ detail_ui <- function(atlas, level, id, ind_id, year) {
           dep_note,
           if (level == "ae") p("Cada declaración se asigna completa al área de su padrón de mayor superficie: una empresa con varios predios puede concentrar su producción en una sola área. No se localizan tambos individuales."),
           if (ind_id == "dens") p("Densidad sobre la superficie total del área; no equivale a rendimiento por hectárea lechera."),
-          if (ind_id == "rem") p("Cuenta números DICOSE con venta a industria; no se suman con otros destinos."))
+          if (ind_id == "rem") p("Cuenta números DICOSE con venta a industria; no se suman con otros destinos."),
+          if (climate) p(if (ind_id == "lluvia") "Lluvia: CHIRPS v2.0 (UCSB), promedio del área, julio a junio." else "Estrés térmico: NASA POWER, celda de ~55 km más cercana al área.",
+                         " Asociación no es causalidad."))
     )
   )
 }
@@ -262,6 +329,23 @@ about_modal <- function(atlas) {
           tags$td(class = "num", sprintf("%s (%s×)", fmt_num(r$ind_ML, 0), fmt_num(r$ratio_ind, 2))))}))),
       p("La producción declarada supera a la remisión (entre 1,05 y 1,10 veces), como corresponde al consumo en el predio y a la industrialización propia. La venta a industria declarada queda debajo de la remisión y oscila frente a «cuota o reparto»: por eso el atlas muestra la leche vendida agregada.")
     ),
+    if (!is.null(atlas$clima)) {
+      cl <- atlas$clima; pa <- cl$panel_areas; na <- cl$nacional_anual
+      lb <- function(t) { r <- pa$coefs[pa$coefs$termino == t, ]; sprintf("%s (IC 95 %%: %s a %s)", fmt_pct(10 * r$estimado, 1), fmt_pct(10 * r$lo, 1), fmt_pct(10 * r$hi, 1)) }
+      pl <- pa$placebo[1, ]
+      tagList(
+        h3("Clima"),
+        p(paste0("Lluvia mensual CHIRPS v2.0 (UCSB/CHC, ~5 km, recorte vía IRI Data Library), promediada en cada polígono y comparada con la normal 1991–2020. Temperatura y humedad diarias de NASA POWER (MERRA-2, ~55 km): índice de temperatura y humedad (THI) y días con THI medio ≥ ", cl$thi_umbral, ". Todo por ejercicio de julio a junio.")),
+        p(strong("Resultado: "), sprintf("en el panel de %d áreas (%d observaciones, efectos fijos por ejercicio) +10 puntos de lluvia del mismo ejercicio se asocian con %s de producción; los del ejercicio anterior, con %s. El placebo con la lluvia del ejercicio siguiente da %s (IC %s a %s). A escala nacional (INALE, %d ejercicios) ninguna correlación supera el umbral de significación (|r| < %s).",
+          pa$areas, pa$n, lb("lluvia_anom"), lb("lluvia_prev"), fmt_pct(10 * pl$estimado, 1), fmt_pct(10 * pl$lo, 1), fmt_pct(10 * pl$hi, 1),
+          na$n, fmt_num(na$r_crit, 2))),
+        {
+          s23 <- na$datos[na$datos$ejercicio == 2023, ]
+          p(sprintf("Con los datos disponibles, el clima no explica de forma detectable los cambios de producción. La sequía de 2022–23 (%s de lluvia en la cuenca lechera) movió la remisión anual apenas un %s. Precios, costos y manejo (suplementación, reservas) dominan la variación. Pocas observaciones y resoluciones gruesas limitan la potencia del análisis; asociación no implica causalidad.",
+                    fmt_pct(s23$lluvia_anom, 0), fmt_pct(s23$d_rem, 1)))
+        }
+      )
+    },
     h3("Limitaciones"),
     tags$ul(
       tags$li("Datos declarados por ejercicio (1 de julio – 30 de junio): no hay estacionalidad ni datos mensuales."),

@@ -24,6 +24,8 @@ fmt_value <- function(x, ind, compact = TRUE) {
     return(paste(fmt_int(x), "L"))
   }
   if (ind$id == "dens") return(paste(fmt_int(x), "L/km²"))
+  if (ind$id == "lluvia") return(fmt_pct(x, 0))
+  if (ind$id == "thi") return(paste(fmt_int(x), if (round(x) == 1) "día" else "días"))
   paste(fmt_int(x), if (x == 1) "tenedor" else "tenedores")
 }
 

@@ -105,6 +105,7 @@ Rscript scripts/05_graficas.R        # → docs/graficas/*.png (1080 × 1080) y 
 - `remision-mensual-por-anio.png`: remisión mensual a planta, una línea por año (INALE).
 - `remision-por-ejercicio.png`: la misma serie de julio a junio, alineada con los ejercicios DICOSE.
 - `variacion-departamentos.png`: variación de la producción declarada 2021 → 2025 por departamento (DICOSE).
+- `clima-lluvia-y-remision.png` y `clima-panel-areas.png`: resultados del análisis climático (ver abajo).
 
 DICOSE no publica producción mensual. Las series mensuales son **remisión a planta** (INALE), que equivale a ≈ 91–95 % de la producción, y así se rotulan.
 
@@ -117,6 +118,32 @@ ffmpeg -framerate 30 -i cuadros/f%04d.jpg -c:v libx264 -pix_fmt yuv420p -crf 18 
 ```
 
 El guion sustituye el reloj de la página por uno que avanza 1/30 s por cuadro. Así las animaciones salen fluidas aunque el equipo renderice WebGL lentamente.
+
+## Clima y lechería
+
+```sh
+Rscript scripts/06_download_clima.R   # CHIRPS (IRI Data Library) y NASA POWER, con caché
+Rscript scripts/07_clima.R            # agrega a áreas y departamentos, y estima la asociación
+```
+
+En el atlas aparecen dos indicadores nuevos en «Clima». El **color** muestra el clima del ejercicio y la **altura** sigue mostrando la producción de leche, para compararlos a simple vista:
+
+- **Lluvia del ejercicio:** lluvia acumulada de julio a junio de CHIRPS v2.0 (~5 km), promediada en cada polígono, en % respecto a la normal 1991–2020.
+- **Estrés térmico:** días con índice de temperatura y humedad (THI) medio ≥ 72, umbral habitual de estrés en vacas lecheras. Fuente: NASA POWER (MERRA-2, celdas de ~55 km); cada área toma la celda más cercana.
+
+### Qué dice el análisis
+
+| Nivel | Diseño | Resultado |
+|---|---|---|
+| Nacional, 2004–2026 | Variación anual de la remisión INALE (julio–junio) contra la lluvia, la humedad del suelo y el estrés térmico de la cuenca lechera (ponderados por producción DICOSE) | Ninguna correlación supera el umbral de significación (\|r\| < 0,41 con 23 ejercicios); el placebo con la lluvia del ejercicio *siguiente* da una magnitud parecida |
+| Áreas, 2022–2025 | 228 áreas, 857 observaciones; cambio de producción contra la lluvia del área, con efectos fijos por ejercicio (absorben precios y shocks nacionales), ponderado por producción, errores agrupados por área | +10 puntos de lluvia → −1,4 % (IC 95 %: −3,4 a +0,6); ejercicio anterior −3,8 % (−10,5 a +2,9); placebo −1,2 % (−3,3 a +0,9) |
+| Mensual, 2003–2026 | Perfil de rezagos entre humedad del suelo y remisión | Solo descriptivo: las ventanas de 12 meses se solapan y el placebo no pasa |
+
+**Conclusión:** con los datos disponibles, el clima no explica de forma detectable los cambios de producción de leche. La sequía de 2022–23 (−42 % de lluvia en la cuenca) apenas movió la remisión anual (−0,8 %), y el ejercicio 2026, seco, tuvo remisión récord. Precios, costos y manejo (suplementación, reservas forrajeras) dominan la variación. Es un resultado nulo con poca potencia, no una prueba de ausencia de efecto: 5 ejercicios DICOSE, resoluciones gruesas para temperatura y asignación de cada declaración al padrón mayor. Asociación no es causalidad.
+
+Fuentes: Funk et al. (2015), *CHIRPS v2.0*, Climate Hazards Center, UC Santa Barbara, vía IRI Data Library; NASA Langley Research Center, *POWER Project*. Otra fuente abierta útil para ampliar el análisis es INUMET, con estaciones en el Catálogo Nacional de Datos Abiertos.
+
+![Lluvia y remisión](docs/graficas/clima-lluvia-y-remision.png)
 
 ## Mapa y diseño
 

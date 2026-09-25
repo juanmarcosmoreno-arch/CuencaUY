@@ -19,7 +19,7 @@ suppressPackageStartupMessages({
 for (f in list.files("R", pattern = "\\.R$", full.names = TRUE)) source(f, local = TRUE)
 
 # Carga única al iniciar el proceso (compartida por todas las sesiones) --------
-ATLAS <- load_atlas()
+ATLAS <- add_climate(load_atlas())
 if (!is.null(ATLAS)) {
   LAYERS <- list(dep = build_layer_data(ATLAS, "dep"), ae = build_layer_data(ATLAS, "ae"))
   SEARCH <- build_search_index(ATLAS)
@@ -42,7 +42,8 @@ server <- function(input, output, session) {
   })
   ind       <- reactive(input$indicator %||% init$ind)
   level     <- reactive(input$level %||% init$level)
-  mode      <- reactive(input$mode %||% init$mode)
+  # Los indicadores climáticos no tienen modo de variación: color = clima.
+  mode      <- reactive(if (is_climate(ind())) "value" else input$mode %||% init$mode)
   transform <- reactive(input$transform %||% init$transform)
   dim       <- reactive(if (identical(input$dim, "2d")) "2d" else "3d")
   selected  <- reactiveVal(NULL)   # list(level, id)
@@ -76,14 +77,17 @@ server <- function(input, output, session) {
     req(map_ready())
     lv <- level(); k <- ind(); y <- year()
     s <- ATLAS$scales[[lv]][[k]]
+    # Con clima, la altura sigue mostrando la producción (su propia escala fija).
+    hk <- if (is_climate(k)) "prod" else k
+    hs <- ATLAS$scales[[lv]][[hk]]
     L <- LEVEL_LAYERS[[lv]]
     proxy |>
       set_paint_property(L$fill, "fill-extrusion-color",
                          color_expr(k, y, s$max, mode(), transform(), s$chg_lim, sel_id())) |>
       set_paint_property(L$fill, "fill-extrusion-height",
-                         height_expr(k, y, s$max, transform(), dim()))
+                         height_expr(hk, y, hs$max, transform(), dim()))
     session$sendCustomMessage("atlas-state", list(
-      year = y, ind = k, level = lv, mode = mode(), dim = dim(),
+      year = y, ind = k, level = lv, mode = mode(), dim = dim(), climate = is_climate(k),
       label = ATLAS$indicators[[k]]$short, unit = ATLAS$indicators[[k]]$unit_short
     ))
   })

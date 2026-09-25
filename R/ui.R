@@ -2,7 +2,7 @@
 # de radio usan el binding estándar de Shiny (clase shiny-input-radiogroup).
 
 radio_group <- function(id, choices, selected, class = "segmented", label = NULL,
-                        subtitles = NULL, disabled = character(0)) {
+                        subtitles = NULL, disabled = character(0), separators = list()) {
   items <- lapply(seq_along(choices), function(i) {
     val <- unname(choices[i]); lab <- names(choices)[i]
     input <- tags$input(type = "radio", name = id, value = val,
@@ -17,6 +17,11 @@ radio_group <- function(id, choices, selected, class = "segmented", label = NULL
       tags$label(input, span(lab))
     }
   })
+  # Separadores con título antes de ciertas opciones (p. ej. «Clima»).
+  for (val in rev(names(separators))) {
+    pos <- match(val, unname(choices))
+    if (!is.na(pos)) items <- append(items, list(div(class = "choice-sep", separators[[val]])), after = pos - 1)
+  }
   div(class = "field",
       if (!is.null(label)) span(class = "field-label", id = paste0(id, "-label"), label),
       div(id = id, class = paste("shiny-input-radiogroup", class), role = "radiogroup",
@@ -67,8 +72,11 @@ controls_panel <- function(atlas) {
       radio_group("indicator",
                   setNames(names(inds), vapply(inds, `[[`, "", "label")),
                   selected = "prod", class = "choice-list", label = "Indicador",
-                  subtitles = c("Litros, todos los destinos", "Litros vendidos",
-                                "Litros por km² de territorio", "Números DICOSE")),
+                  subtitles = unname(c(prod = "Litros, todos los destinos", venta = "Litros vendidos",
+                                       dens = "Litros por km² de territorio", rem = "Números DICOSE",
+                                       lluvia = "% respecto a 1991–2020",
+                                       thi = "Días con THI ≥ 72")[names(inds)]),
+                  separators = list(lluvia = tagList(span("Clima"), span(class = "choice-sep-sub", "La altura sigue mostrando la producción")))),
       radio_group("level", c("Departamentos" = "dep", "Áreas de enumeración" = "ae"),
                   selected = "dep", label = "Nivel territorial"),
       radio_group("mode", c("Magnitud" = "value", "Variación anual" = "change"),

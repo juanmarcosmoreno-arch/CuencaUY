@@ -1,0 +1,4 @@
+predictor,efecto_pct_por_10pp,ic_inf,ic_sup
+Lluvia del mismo ejercicio,-1.4318720713824329,-3.418207485196193,0.5544633424313272
+Lluvia del ejercicio anterior,-3.8328646982051535,-10.53320124945866,2.867471853048353
+Lluvia del ejercicio siguiente (placebo: no puede causar nada),-1.2178174604466336,-3.3438202263079035,0.9081853054146365

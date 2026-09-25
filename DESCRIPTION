@@ -17,7 +17,10 @@ Imports:
     jsonlite,
     ggplot2,
     rmapshaper,
-    geojsonsf
+    geojsonsf,
+    terra
 Suggests:
     testthat,
-    renv
+    renv,
+    ragg,
+    systemfonts

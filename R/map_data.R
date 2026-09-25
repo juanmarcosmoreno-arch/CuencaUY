@@ -26,9 +26,11 @@ build_layer_data <- function(atlas, level) {
     for (y in atlas$years) {
       vy <- v[v$ejercicio == y, ]
       i <- match(g$id, vy$id)
-      wide[[sprintf("%s_%d", k, y)]]   <- vy[[k]][i]
-      wide[[sprintf("%s_%d_c", k, y)]] <- round(vy[[paste0(k, "_chg")]][i], 2)
-      wide[[sprintf("%s_%d_s", k, y)]] <- unname(STATUS_CODE[vy[[paste0(k, "_cmp")]][i]])
+      wide[[sprintf("%s_%d", k, y)]] <- if (is_climate(k)) round(vy[[k]][i], 1) else vy[[k]][i]
+      if (!is_climate(k)) {
+        wide[[sprintf("%s_%d_c", k, y)]] <- round(vy[[paste0(k, "_chg")]][i], 2)
+        wide[[sprintf("%s_%d_s", k, y)]] <- unname(STATUS_CODE[vy[[paste0(k, "_cmp")]][i]])
+      }
     }
   }
   out <- cbind(g[, c("id", "name", "dep_name")], as.data.frame(wide))
@@ -78,7 +80,18 @@ seq_stops <- function(max, transform = "linear") {
 
 color_expr <- function(ind, year, max, mode = "value", transform = "linear",
                        chg_lim = 50, selected = NULL) {
-  if (mode == "value") {
+  if (ind == "lluvia") {
+    # Divergente: terracota = más seco que lo normal, verde azulado = más húmedo.
+    d <- seq(-chg_lim, chg_lim, length.out = length(PAL_DIV))
+    e <- list("interpolate", list("linear"),
+              list("to-number", list("get", prop_name(ind, year)), 0))
+    for (i in seq_along(d)) e <- c(e, list(d[i], PAL_DIV[i]))
+  } else if (ind == "thi") {
+    s <- seq(0, max, length.out = length(PAL_THI))
+    e <- list("interpolate", list("linear"),
+              list("to-number", list("get", prop_name(ind, year)), 0))
+    for (i in seq_along(s)) e <- c(e, list(s[i], PAL_THI[i]))
+  } else if (mode == "value") {
     stops <- seq_stops(max, transform)
     e <- list("interpolate", list("linear"),
               list("to-number", list("get", prop_name(ind, year)), 0),
@@ -117,3 +130,34 @@ offline_style <- function() {
        layers = list(list(id = "background", type = "background",
                           paint = list(`background-color` = "#EEEEE8"))))
 }
+
+# Clima (opcional): si existe data/clima.rds se agregan dos indicadores. El color
+# muestra el clima del ejercicio; la altura sigue siendo la producción de leche.
+PAL_THI <- c("#FBEFE3", "#F4D2B4", "#E9AD82", "#D98657", "#C0613A", "#963F24")
+CLIMATE_IND <- c("lluvia", "thi")
+
+add_climate <- function(atlas, path = file.path("data", "clima.rds")) {
+  if (is.null(atlas) || !file.exists(path)) return(atlas)
+  cl <- readRDS(path)
+  for (lv in c("ae", "dep")) {
+    e <- cl$ejercicios[[lv]] |>
+      dplyr::transmute(id, ejercicio, lluvia_mm = lluvia, lluvia = lluvia_anom, thi = thi_dias)
+    atlas$values[[lv]] <- atlas$values[[lv]] |> dplyr::left_join(e, by = c("id", "ejercicio"))
+    v <- atlas$values[[lv]]
+    atlas$scales[[lv]]$lluvia <- list(max = 50, max_raw = max(abs(v$lluvia), na.rm = TRUE), chg_lim = 50)
+    atlas$scales[[lv]]$thi <- list(max = ceiling(max(v$thi, na.rm = TRUE) / 10) * 10,
+                                   max_raw = max(v$thi, na.rm = TRUE), chg_lim = NA)
+  }
+  atlas$indicators$lluvia <- list(
+    id = "lluvia", label = "Lluvia del ejercicio", short = "Lluvia", group = "clima",
+    unit = "% respecto a la normal 1991–2020", unit_short = "%", big = 1, big_unit = "% vs. normal 1991–2020",
+    desc = "Precipitación acumulada de julio a junio (CHIRPS v2.0, ~5 km), promediada en cada área, frente a su promedio 1991–2020. El color muestra la lluvia; la altura, la producción de leche.")
+  atlas$indicators$thi <- list(
+    id = "thi", label = "Estrés térmico", short = "Días THI ≥ 72", group = "clima",
+    unit = "días con THI medio ≥ 72", unit_short = "días", big = 1, big_unit = "días en el ejercicio",
+    desc = sprintf("Días del ejercicio con índice de temperatura y humedad medio ≥ %d, umbral habitual de estrés en vacas lecheras (NASA POWER, celdas de ~55 km). El color muestra el estrés; la altura, la producción.", cl$thi_umbral))
+  atlas$clima <- cl
+  atlas
+}
+
+is_climate <- function(ind) ind %in% CLIMATE_IND

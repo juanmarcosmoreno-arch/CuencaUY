@@ -87,4 +87,23 @@ test_that("el servidor responde a año, indicador y selección", {
   })
 })
 
+
+test_that("la capa climática se integra sin alterar la producción", {
+  a2 <- add_climate(atlas)
+  skip_if(is.null(a2$clima), "sin data/clima.rds")
+  v <- a2$values$ae
+  expect_equal(sum(v$prod), sum(atlas$values$ae$prod))          # el join no duplica filas
+  expect_true(all(c("lluvia", "lluvia_mm", "thi") %in% names(v)))
+  expect_true(all(v$lluvia_mm >= 0, na.rm = TRUE))               # mm, no anomalía
+  expect_false(isTRUE(all.equal(v$lluvia, v$lluvia_mm)))
+  L <- build_layer_data(a2, "ae")
+  expect_true(all(c("lluvia_2023", "thi_2023") %in% names(L)))
+  expect_equal(color_expr("lluvia", 2023, 50, chg_lim = 50)[[1]], "interpolate")
+  # Paneles con clima: se renderizan y no quedan cifras escritas a mano.
+  html <- as.character(about_modal(a2))
+  expect_match(html, "Clima")
+  expect_match(as.character(legend_ui(a2, "lluvia", "ae", 2023, "value", "linear", "3d")), "más seco")
+  expect_match(as.character(detail_ui(a2, "ae", "0804006", "lluvia", 2023)), "mm de lluvia")
+})
+
 withr_defer()

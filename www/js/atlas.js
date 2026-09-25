@@ -161,12 +161,20 @@
     var y = S.year, k = S.ind;
     var v = p[k + "_" + y];
     var val;
+    var prodLine = "";
+    if (k === "lluvia" || k === "thi") {
+      var pv = p["prod_" + y];
+      prodLine = '<div class="tt-sub">Producción: ' + (pv === undefined || pv === null ? "sin datos" :
+        pv >= 1e6 ? fmt1.format(pv / 1e6) + " M L" : fmt.format(pv) + " L") + "</div>";
+    }
     if (v === undefined || v === null) val = "sin datos";
+    else if (k === "lluvia") val = (v > 0 ? "+" : v < 0 ? "−" : "") + fmt.format(Math.abs(v)) + " % vs. normal";
+    else if (k === "thi") val = fmt.format(v) + (v === 1 ? " día" : " días");
     else if (k === "prod" || k === "venta") val = v >= 1e6 ? fmt1.format(v / 1e6) + " M L" : fmt.format(v) + " L";
     else if (k === "dens") val = fmt.format(v) + " L/km²";
     else val = fmt.format(v) + (v === 1 ? " tenedor" : " tenedores");
     var sub = "";
-    if (S.mode === "change") {
+    if (S.mode === "change" && !S.climate) {
       var s = p[k + "_" + y + "_s"], c = p[k + "_" + y + "_c"];
       if (s === 0 && c !== null && c !== undefined) sub = (c > 0 ? "+" : c < 0 ? "−" : "") + fmt1.format(Math.abs(c)) + " % vs. " + (y - 1);
       else if (s === 1) sub = "Sin base de comparación";
@@ -176,7 +184,7 @@
     var name = S.level === "ae" ? p.name + " · " + p.dep_name : p.dep_name;
     return '<div class="tt-name">' + escapeHtml(name) + '</div>' +
       '<div class="tt-val">' + escapeHtml(S.label) + " " + y + ": <strong>" + val + "</strong></div>" +
-      (sub ? '<div class="tt-sub">' + sub + "</div>" : "");
+      (sub ? '<div class="tt-sub">' + sub + "</div>" : "") + prodLine;
   }
 
   function bindMap(map) {
@@ -335,6 +343,13 @@
     });
     Shiny.addCustomMessageHandler("atlas-state", function (m) {
       S.ind = m.ind; S.level = m.level; S.mode = m.mode; S.label = m.label; S.unit = m.unit;
+      S.climate = !!m.climate;
+      // El clima no tiene modo de variación: se desactiva mientras esté elegido.
+      document.querySelectorAll('input[name="mode"]').forEach(function (r) {
+        r.disabled = S.climate && r.value === "change";
+      });
+      var mg = document.getElementById("mode");
+      if (mg) mg.setAttribute("title", S.climate ? "Con indicadores climáticos el color muestra el clima del ejercicio" : "");
       if (S.popup) S.popup.remove();
     });
     Shiny.addCustomMessageHandler("atlas-detail", function (m) {

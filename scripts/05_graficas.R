@@ -30,9 +30,13 @@ INK <- "#172B2A"; INK2 <- "#667773"; LINE <- "#E3E8E4"; BG <- "#FCFCFB"
 RAMP <- c("#82BA9C", "#5AA088", "#398674", "#216D62", "#12564F", "#083D38")
 NEG <- "#B8663F"; POS <- "#2A7F80"
 
-wrap <- function(x, width) paste(vapply(strsplit(x, "\n", fixed = TRUE)[[1]],
-                                          function(l) paste(strwrap(l, width), collapse = "\n"), ""),
-                                   collapse = "\n")
+# Ajuste de línea que nunca separa un número de su «%».
+wrap <- function(x, width) {
+  x <- gsub("(\\d)[ \u00a0]%", "\\1\u00a7%", x)
+  out <- paste(vapply(strsplit(x, "\n", fixed = TRUE)[[1]],
+                      function(l) paste(strwrap(l, width), collapse = "\n"), ""), collapse = "\n")
+  gsub("\u00a7", " ", out, fixed = TRUE)
+}
 signed <- function(v, d = 0) paste0(ifelse(v > 0, "+", ifelse(v < 0, "−", "")), fmt_es(abs(v), d))
 fmt_es <- function(x, d = 0) formatC(x, format = "f", digits = d, big.mark = ".", decimal.mark = ",")
 
@@ -178,4 +182,70 @@ write_csv(d1 |> transmute(anio, mes, remision_millones_litros = ml), file.path(o
 write_csv(d2 |> transmute(ejercicio, mes_del_ejercicio = pos, remision_millones_litros = ml), file.path(out_dir, "remision-por-ejercicio.csv"))
 write_csv(d3 |> transmute(departamento = dep, litros_inicio = ini, litros_fin = fin, variacion_pct = round(chg, 2)),
           file.path(out_dir, "variacion-departamentos.csv"))
+
+# 4–5. Clima (si existe data/clima.rds) -------------------------------------------
+clima_path <- file.path(DIR_DATA, "clima.rds")
+if (file.exists(clima_path)) {
+  cl <- readRDS(clima_path)
+  na <- cl$nacional_anual$datos |> filter(!is.na(d_rem))
+  r_ll <- cl$nacional_anual$cor$r[1]
+  d4 <- bind_rows(
+    na |> transmute(ejercicio, panel = "Lluvia en la cuenca lechera\n% respecto a la normal 1991–2020", valor = lluvia_anom),
+    na |> transmute(ejercicio, panel = "Remisión a planta\nvariación respecto al ejercicio anterior, %", valor = d_rem)) |>
+    mutate(panel = factor(panel, levels = unique(panel)),
+           tono = ifelse(grepl("^Lluvia", panel), ifelse(valor < 0, "seco", "humedo"), ifelse(valor < 0, "baja", "sube")))
+  lab4 <- na |> filter(ejercicio %in% c(2016, 2023, 2026)) |>
+    transmute(ejercicio, panel = factor(levels(d4$panel)[2], levels = levels(d4$panel)), valor = d_rem,
+              txt = c(`2016` = "Crisis de precios\ncon lluvia normal", `2023` = "Sequía de 2022–23:\nla remisión apenas cae",
+                      `2026` = "Año seco,\nremisión récord")[as.character(ejercicio)])
+  p4 <- ggplot(d4, aes(ejercicio, valor, fill = tono)) +
+    geom_hline(yintercept = 0, colour = "#B9C4BE", linewidth = 0.4) +
+    geom_col(width = 0.7) +
+    geom_text(data = lab4, inherit.aes = FALSE,
+              mapping = aes(ejercicio, valor, label = txt, vjust = ifelse(valor < 0, 1.2, -0.3),
+                            hjust = ifelse(ejercicio >= 2025, 1, 0.5)),
+              family = "Inter Atlas", size = 3.2, colour = INK, lineheight = 0.95) +
+    facet_wrap(~panel, ncol = 1, scales = "free_y") +
+    scale_fill_manual(values = c(seco = NEG, humedo = POS, baja = "#9CB8B0", sube = "#176B60"), guide = "none") +
+    scale_x_continuous(breaks = seq(2004, 2026, 2)) +
+    scale_y_continuous(labels = function(v) paste0(signed(v), " %"), expand = expansion(mult = c(0.55, 0.45))) +
+    labs(title = "Años secos, leche estable",
+         subtitle = wrap(sprintf("Por ejercicio (julio–junio), %d–%d. La lluvia y la remisión no se mueven juntas: r = %s, no significativa con %d ejercicios.",
+                                 min(na$ejercicio), max(na$ejercicio), signed(r_ll, 2), nrow(na)), 66),
+         caption = wrap("Fuentes: lluvia CHIRPS v2.0 (UCSB), ponderada por la producción DICOSE de cada área; remisión INALE. Asociación no es causalidad. Atlas Lechero Uruguay.", 84)) +
+    theme_atlas() +
+    theme(strip.text = element_text(colour = INK, face = "bold", size = 12.5, hjust = 0, lineheight = 1.1),
+          panel.spacing = unit(18, "pt"), axis.text.x = element_text(size = 11))
+  save_png(p4, "clima-lluvia-y-remision.png")
+
+  pa <- cl$panel_areas
+  d5 <- bind_rows(
+    pa$coefs |> filter(termino %in% c("lluvia_anom", "lluvia_prev")),
+    pa$placebo |> filter(termino == "lluvia_sig")) |>
+    mutate(etq = c(lluvia_anom = "Lluvia del mismo ejercicio", lluvia_prev = "Lluvia del ejercicio anterior",
+                   lluvia_sig = "Lluvia del ejercicio siguiente\n(placebo: no puede causar nada)")[termino],
+           across(c(estimado, lo, hi), ~ 10 * .x),
+           etq = factor(etq, levels = rev(etq)))
+  p5 <- ggplot(d5, aes(estimado, etq)) +
+    annotate("rect", xmin = -Inf, xmax = Inf, ymin = 0.5, ymax = 1.5, fill = "#F1EEE8") +
+    geom_vline(xintercept = 0, colour = "#8A9894", linewidth = 0.5) +
+    geom_linerange(aes(xmin = lo, xmax = hi), linewidth = 1.1, colour = "#176B60") +
+    geom_point(size = 3.6, colour = "#176B60", fill = BG, shape = 21, stroke = 1.6) +
+    geom_text(aes(label = sprintf("%s %%\n[%s ; %s]", signed(estimado, 1), signed(lo, 1), signed(hi, 1))),
+              nudge_y = 0.32, family = "Inter Atlas", size = 3.5, colour = INK, lineheight = 0.95) +
+    scale_x_continuous(labels = function(v) paste0(signed(v), " %"), expand = expansion(mult = 0.15)) +
+    labs(title = "Entre áreas, tampoco hay señal",
+         subtitle = wrap(sprintf("Cambio estimado de la producción de un área por cada +10 puntos de lluvia frente a lo normal, comparando áreas dentro del mismo ejercicio. %d áreas, %d observaciones, 2022–2025. Barras: intervalo de confianza del 95\u00a0%%.",
+                                 pa$areas, pa$n), 66),
+         caption = wrap("Todos los intervalos incluyen el cero, y el placebo da un valor parecido: no hay señal distinguible. Efectos fijos por ejercicio, ponderado por producción, errores agrupados por área. Fuentes: DICOSE–SNIG (MGAP), CHIRPS v2.0. Atlas Lechero Uruguay.", 84)) +
+    theme_atlas() +
+    theme(panel.grid.major.y = element_blank(),
+          panel.grid.major.x = element_line(colour = LINE, linewidth = 0.35),
+          axis.text.y = element_text(colour = INK, size = 12.5, lineheight = 1.05))
+  save_png(p5, "clima-panel-areas.png")
+  write_csv(na |> select(ejercicio, remision, d_rem, lluvia_anom, gw_z, thi_dias), file.path(out_dir, "clima-lluvia-y-remision.csv"))
+  write_csv(d5 |> transmute(predictor = gsub("\n", " ", etq), efecto_pct_por_10pp = estimado, ic_inf = lo, ic_sup = hi),
+            file.path(out_dir, "clima-panel-areas.csv"))
+}
+
 msg("Listo.")
