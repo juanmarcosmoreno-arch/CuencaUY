@@ -149,7 +149,7 @@ const GUIONES = {
       { at: 25.8, move: 0.6, to: { sel: '.tl-year[data-year="2023"]' }, click: `document.querySelector('.tl-year[data-year="2023"]').click()` },
       { at: 28.1, move: 0.7, to: { sel: '#btn-tendencias' }, click: `document.querySelector('#btn-tendencias').click()` },
       // Sobre la línea de 2026 (el mouse real también se mueve para que Shiny muestre el tooltip).
-      { at: 30.0, move: 0.9, real: true, to: { plot: [0.535, 0.24] }, click: '' },
+      { at: 30.0, move: 0.9, real: true, to: { plot: [0.545, 0.2] }, click: "" },
       { at: 32.7, move: 0.6, to: { sel: '#tv_view label:has(input[value=precio])' }, click: `document.querySelector('#tv_view input[value=precio]').click()` },
       { at: 34.3, move: 0.5, to: { sel: '#tv_view label:has(input[value=clima])' }, click: `document.querySelector('#tv_view input[value=clima]').click()` },
     ],
@@ -216,6 +216,7 @@ const plan = () => G.moves.map(m => ({ ...m }));
       }
       if (t >= m.at + m.move + 0.1 && !clicked.has(i)) {
         clicked.add(i); cursor = m.dest.slice();
+        if (m.real) await page.mouse.move(cursor[0] + 1, cursor[1]);
         if (m.click) { m.clickAt = t; await page.evaluate(m.click); }
       }
     }
