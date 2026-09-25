@@ -694,20 +694,31 @@
    "filter": [
     "all",
     [
-     "==",
+     "all",
      [
-      "get",
-      "class"
+      "==",
+      [
+       "get",
+       "class"
+      ],
+      "country"
      ],
-     "country"
+     [
+      "==",
+      [
+       "get",
+       "rank"
+      ],
+      1
+     ]
     ],
     [
-     "==",
+     "!=",
      [
       "get",
-      "rank"
+      "name"
      ],
-     1
+     "Uruguay"
     ]
    ],
    "layout": {
@@ -756,20 +767,31 @@
    "filter": [
     "all",
     [
-     "==",
+     "all",
      [
-      "get",
-      "class"
+      "==",
+      [
+       "get",
+       "class"
+      ],
+      "country"
      ],
-     "country"
+     [
+      "==",
+      [
+       "get",
+       "rank"
+      ],
+      2
+     ]
     ],
     [
-     "==",
+     "!=",
      [
       "get",
-      "rank"
+      "name"
      ],
-     2
+     "Uruguay"
     ]
    ],
    "layout": {
@@ -819,20 +841,31 @@
    "filter": [
     "all",
     [
-     "==",
+     "all",
      [
-      "get",
-      "class"
+      "==",
+      [
+       "get",
+       "class"
+      ],
+      "country"
      ],
-     "country"
+     [
+      ">=",
+      [
+       "get",
+       "rank"
+      ],
+      3
+     ]
     ],
     [
-     ">=",
+     "!=",
      [
       "get",
-      "rank"
+      "name"
      ],
-     3
+     "Uruguay"
     ]
    ],
    "layout": {

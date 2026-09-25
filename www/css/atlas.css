@@ -165,7 +165,7 @@ body { overflow: hidden; }
 
 /* Paneles flotantes ---------------------------------------------------- */
 
-.card {
+.surface {
   background: var(--surface-glass);
   -webkit-backdrop-filter: saturate(1.2) blur(10px);
   backdrop-filter: saturate(1.2) blur(10px);
@@ -196,6 +196,8 @@ body { overflow: hidden; }
 }
 
 .field { margin: 14px 0 0; }
+.field-search { margin-top: 6px; }
+.only-mobile { display: none !important; }
 .field-label {
   display: block; font-size: 12.5px; font-weight: 600; color: var(--ink); margin: 0 0 6px;
 }
@@ -272,7 +274,7 @@ body { overflow: hidden; }
   transition: left .28s var(--ease);
 }
 .atlas.left-collapsed .overlay-top { left: calc(var(--gap) + 56px); }
-.atlas.detail-open .overlay-top { right: calc(var(--detail-w) + var(--gap) * 2); }
+.atlas.detail-open .overlay-top { right: calc(var(--detail-w) + var(--gap) * 3 + 56px); }
 
 .year-card { padding: 10px 16px 10px; pointer-events: auto; }
 .year-kicker { font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-2); font-weight: 600; }
@@ -468,7 +470,14 @@ body { overflow: hidden; }
     border-radius: 4px; background: var(--line-strong);
   }
   .atlas.detail-open .panel-detail { transform: none; }
-  .panel-toggle { top: auto; bottom: calc(var(--gap)); left: var(--gap); }
+  .panel-toggle {
+    top: auto; bottom: calc(var(--gap) + 18px); left: var(--gap); width: auto; padding: 0 14px 0 12px;
+    gap: 6px; display: inline-flex; align-items: center; border-radius: 999px; font: inherit;
+    font-size: 13px; font-weight: 600; color: var(--ink);
+  }
+  .only-mobile { display: inline-block !important; }
+  .only-desktop { display: none !important; }
+  .panel-detail { max-height: 62%; }
 
   .overlay-top { left: var(--gap) !important; right: calc(var(--gap) + 52px) !important; gap: 8px; }
   .year-card { padding: 6px 12px; }
@@ -492,3 +501,6 @@ body { overflow: hidden; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; }
 }
+
+/* Las salidas de Shiny usan display: contents; el contenedor define la caja. */
+.panel-detail .shiny-html-output { display: contents; }

@@ -399,11 +399,12 @@ if (file.exists(inale_path) && requireNamespace("readxl", quietly = TRUE)) {
 msg("Guardando")
 dir.create(DIR_DATA, showWarnings = FALSE)
 
-geo_ae <- ae_s |> left_join(st_drop_geometry(ae) |> select(id, area_km2), by = "id") |>
+# ae_s y dep_s conservan area_km2, calculada sobre la geometría original.
+geo_ae <- ae_s |>
   mutate(dep_name = DEP_LABEL[as.integer(dep)],
-         name = sprintf("Área %s·%s", substr(as_code, 3, 4), ae_num),
+         name = sprintf("Área %s", id),
          label = sprintf("%s — AE %s", dep_name, id))
-geo_dep <- dep_s |> left_join(st_drop_geometry(dep) |> select(id, area_km2), by = "id") |>
+geo_dep <- dep_s |>
   mutate(dep_name = DEP_LABEL[as.integer(id)], name = dep_name, label = dep_name)
 
 sources <- man |> filter(!is.na(archivo) | fuente == "geo") |>
