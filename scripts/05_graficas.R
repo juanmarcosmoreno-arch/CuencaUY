@@ -29,6 +29,9 @@ INK <- "#172B2A"; INK2 <- "#667773"; LINE <- "#E3E8E4"; BG <- "#FCFCFB"
 # Rampa ordinal de un solo tono (validada: monótona, ΔL ≥ 0,06, extremo claro ≥ 2:1).
 RAMP <- c("#82BA9C", "#5AA088", "#398674", "#216D62", "#12564F", "#083D38")
 NEG <- "#B8663F"; POS <- "#2A7F80"
+# Un color propio por año, igual que en la app (R/tendencias.R).
+YEAR_COLS <- c(`2021` = "#2a78d6", `2022` = "#eb6834", `2023` = "#1baf7a", `2024` = "#eda100",
+               `2025` = "#e87ba4", `2026` = "#008300", `2027` = "#4a3aa7")
 
 # Ajuste de línea que nunca separa un número de su «%».
 wrap <- function(x, width) {
@@ -92,7 +95,7 @@ msg("INALE: remisión mensual hasta ", MESES[ultimo$mes], " ", ultimo$anio)
 # 1. Año calendario ------------------------------------------------------------
 y1 <- 2021:max(inale$anio)
 d1 <- inale |> filter(anio %in% y1) |> mutate(anio = factor(anio, levels = y1))
-pal1 <- setNames(tail(RAMP, length(y1)), y1)
+pal1 <- YEAR_COLS[as.character(y1)]
 ends1 <- d1 |> group_by(anio) |> filter(mes == max(mes)) |> ungroup() |>
   filter(anio %in% tail(y1, 2))
 # ¿El último año supera a todos los anteriores en cada mes con dato?
@@ -128,7 +131,7 @@ completos <- d2 |> count(ejercicio) |> filter(n == 12) |> pull(ejercicio)
 y2 <- intersect(2021:max(d2$ejercicio), completos)
 d2 <- d2 |> filter(ejercicio %in% y2) |> mutate(ejercicio = factor(ejercicio, levels = y2))
 tot2 <- d2 |> group_by(ejercicio) |> summarise(total = sum(ml))
-pal2 <- setNames(tail(RAMP, length(y2)), y2)
+pal2 <- YEAR_COLS[as.character(y2)]
 ends2 <- d2 |> filter(pos == 12, ejercicio %in% tail(y2, 2)) |>
   left_join(tot2, by = "ejercicio")
 p2 <- ggplot(d2, aes(pos, ml, colour = ejercicio)) +

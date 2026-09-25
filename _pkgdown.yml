@@ -1,4 +1,4 @@
-url: https://juanmarcosmoreno-arch.github.io/milkmapR/
+url: https://juanmarcosmoreno-arch.github.io/CuencaUY/
 destination: _site
 title: CuencaUY
 lang: es
@@ -47,7 +47,7 @@ navbar:
       href: articles/marca.html
     github:
       icon: fa-github
-      href: https://github.com/juanmarcosmoreno-arch/milkmapR
+      href: https://github.com/juanmarcosmoreno-arch/CuencaUY
       aria-label: GitHub
 
 articles:

@@ -17,7 +17,7 @@ DIR_RAW       <- file.path(PROJECT_ROOT, "data-raw")
 DIR_DATA      <- file.path(PROJECT_ROOT, "data")
 MANIFEST_PATH <- file.path(DIR_RAW, "manifest.csv")
 
-USER_AGENT <- "AtlasLecheroUruguay/1.0 (+https://github.com/juanmarcosmoreno-arch/milkmapR)"
+USER_AGENT <- "CuencaUY/1.0 (+https://github.com/juanmarcosmoreno-arch/CuencaUY)"
 
 # Conjuntos DICOSE–SNIG publicados en el Catálogo Nacional de Datos Abiertos.
 # `estado` se deriva del título oficial y se vuelve a comprobar tras la descarga.

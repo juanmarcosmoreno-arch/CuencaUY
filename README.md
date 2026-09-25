@@ -1,6 +1,6 @@
 # CuencaUY · La lechería uruguaya en el mapa <img src="man/figures/logo.png" align="right" height="139" alt="Hexágono de CuencaUY" />
 
-**Página del proyecto:** <https://juanmarcosmoreno-arch.github.io/milkmapR/>
+**Página del proyecto:** <https://juanmarcosmoreno-arch.github.io/CuencaUY/>
 
 CuencaUY es un atlas digital en R/Shiny que muestra cómo cambia la geografía de la lechería uruguaya entre los ejercicios 2021 y 2025. Usa un mapa 3D en WebGL (mapgl + MapLibre) con los polígonos oficiales elevados según la magnitud del indicador. Los datos provienen de las declaraciones juradas DICOSE–SNIG del MGAP.
 
@@ -113,7 +113,7 @@ El botón **Tendencias** del encabezado abre las gráficas interactivas. Al pasa
 
 | Vista | Qué muestra | Fuente pública |
 |---|---|---|
-| Leche por mes | Remisión mensual a planta, una línea por año (2002 en adelante). Los años se eligen con los botones; hay atajos para los últimos 5, desde 2021 o todos | INALE, estadísticas lecheras |
+| Leche por mes | Remisión mensual a planta desde 2021, una línea por año con un color propio. Los botones de año muestran u ocultan cada línea | INALE, estadísticas lecheras |
 | Año lechero | La misma serie de julio a junio, igual que los ejercicios DICOSE | INALE |
 | Rodeo y tambos | Producción, vacas masa, litros por vaca y tambos, 2021–2025 | MGAP, DICOSE–SNIG (Catálogo de Datos Abiertos) |
 | Departamentos | Variación de la producción 2021 → 2025 | MGAP, DICOSE–SNIG |

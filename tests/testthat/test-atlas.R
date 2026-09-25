@@ -153,8 +153,10 @@ test_that("Tendencias: series oficiales, vistas, tooltip y CSV", {
     expect_false(grepl("NA", paste(x$data$tip_value, collapse = " ")), info = v)
   }
   # Años elegidos: solo esos aparecen; sin años, no hay gráfica.
-  m <- tv_view(T, "mes", c("2010", "2024"))
-  expect_equal(sort(unique(m$data$anio)), c(2010L, 2024L))
+  expect_true(min(T$anios) == 2021 && min(T$ejercicios) == 2021)   # desde el primer ejercicio DICOSE
+  expect_equal(length(unique(year_colour(T$ejercicios))), length(T$ejercicios))   # un color por año
+  m <- tv_view(T, "mes", c("2022", "2024"))
+  expect_equal(sort(unique(m$data$anio)), c(2022L, 2024L))
   expect_null(tv_view(T, "mes", character(0)))
   # Tooltip: el punto más cercano al cursor y la barra bajo el cursor.
   y5 <- m$data$ml[m$data$anio == 2024 & m$data$mes == 5]

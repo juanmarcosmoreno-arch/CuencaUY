@@ -395,17 +395,6 @@
         case "btn-about": setInput("about", Date.now(), true); break;
         case "btn-tendencias": setPlaying(false); setInput("tendencias", Date.now(), true); break;
       }
-      // Tendencias: atajos de selección de años.
-      if (t.hasAttribute("data-preset")) {
-        var boxes = Array.prototype.slice.call(document.querySelectorAll('input[name="' + t.getAttribute("data-target") + '"]'));
-        var yrs = boxes.map(function (b) { return parseInt(b.value, 10); });
-        var top = Math.max.apply(null, yrs), pr = t.getAttribute("data-preset");
-        boxes.forEach(function (b) {
-          var y = parseInt(b.value, 10);
-          b.checked = pr === "all" || (pr === "5" ? y > top - 5 : y >= parseInt(pr, 10));
-        });
-        if (boxes.length) boxes[0].dispatchEvent(new Event("change", { bubbles: true }));
-      }
       if (t.classList.contains("tl-year") && !t.disabled) {
         setYear(parseInt(t.getAttribute("data-year"), 10));
         if (S.playing) schedule();

@@ -11,7 +11,11 @@
 # tooltip al pasar el mouse) y la tabla que se descarga como CSV.
 
 TV_INK <- "#172B2A"; TV_INK2 <- "#667773"; TV_LINE <- "#E7ECE8"
-TV_RAMP <- c("#82BA9C", "#5AA088", "#398674", "#216D62", "#12564F", "#083D38")
+# Un color propio por año (paleta categórica validada para daltonismo sobre el
+# fondo #F5F3EE). El color sigue al año, no a su posición: 2024 es siempre violeta.
+TV_YEAR_COLS <- c(`2021` = "#2a78d6", `2022` = "#eb6834", `2023` = "#1baf7a", `2024` = "#eda100",
+                  `2025` = "#e87ba4", `2026` = "#008300", `2027` = "#4a3aa7")
+TV_DESDE <- 2021L    # primer ejercicio DICOSE: las series mensuales se muestran desde ahí
 TV_NEG <- "#B8663F"; TV_POS <- "#2A7F80"
 MES_LARGO <- c("enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto",
                "setiembre", "octubre", "noviembre", "diciembre")
@@ -38,15 +42,18 @@ load_tendencias <- function(atlas, path = file.path("data", "tendencias.rds")) {
   if (is.null(rem)) views <- views[!views %in% c("mes", "ejercicio")]
   if (is.null(atlas$clima)) views <- views[!views %in% c("precio", "clima")]
   list(remision = rem, ultimo = t$ultimo, atlas = atlas, clima = atlas$clima, views = views,
-       anios = if (!is.null(rem)) sort(unique(rem$anio)),
-       ejercicios = if (!is.null(rem)) sort(unique(rem$ejercicio)))
+       anios = if (!is.null(rem)) sort(unique(rem$anio[rem$anio >= TV_DESDE])),
+       ejercicios = if (!is.null(rem)) sort(unique(rem$ejercicio[rem$ejercicio >= TV_DESDE])))
 }
 
 # Años marcados al abrir: desde el primer ejercicio DICOSE hasta hoy.
-tv_default_years <- function(yrs, desde = 2021) as.character(yrs[yrs >= desde])
+tv_default_years <- function(yrs, desde = TV_DESDE) as.character(yrs[yrs >= desde])
 
-tv_colours <- function(n) {
-  if (n <= length(TV_RAMP)) tail(TV_RAMP, n) else grDevices::colorRampPalette(TV_RAMP)(n)
+year_colour <- function(y) {
+  y <- as.character(y)
+  out <- unname(TV_YEAR_COLS[y])
+  out[is.na(out)] <- "#667773"
+  out
 }
 
 tv_theme <- function() {
@@ -84,7 +91,7 @@ tv_mes <- function(T, years, narrow = FALSE) {
   yrs <- sort(as.integer(years))
   d <- T$remision |> dplyr::filter(anio %in% yrs)
   if (!nrow(d)) return(NULL)
-  pal <- stats::setNames(tv_colours(length(yrs)), yrs)
+  pal <- stats::setNames(year_colour(yrs), yrs)
   last <- max(yrs)
   d <- d |> dplyr::arrange(anio, mes) |>
     dplyr::mutate(x = mes, y = ml, grupo = factor(anio, levels = yrs),
@@ -104,11 +111,11 @@ tv_mes <- function(T, years, narrow = FALSE) {
     ggplot2::guides(colour = ggplot2::guide_legend(nrow = if (length(yrs) > 13) 2 else 1,
                                                    override.aes = list(linewidth = 1.2))) +
     tv_theme() +
-    if (narrow) ggplot2::theme(legend.position = "none")
+    ggplot2::theme(legend.position = "none")   # la leyenda son los botones de año
   u <- T$ultimo
   list(plot = p, data = d, type = "point",
        title = "La leche que llega a planta, mes a mes",
-       sub = sprintf("Remisión mensual a la industria, en millones de litros. Una línea por año; %d resaltado. Pase el cursor por una línea para ver el valor.", last),
+       sub = sprintf("Remisión mensual a la industria, en millones de litros, desde 2021 (el primer ejercicio del atlas). Una línea por año; %d resaltado. Pase el cursor por una línea para ver el valor.", last),
        source = sprintf("Fuente: INALE, remisión a planta (datos hasta %s de %d). DICOSE (MGAP) solo publica producción anual; la remisión mensual equivale a ≈ 91–95\u00a0%% de lo producido.",
                         MES_LARGO[u$mes], u$anio),
        csv = d |> dplyr::transmute(anio, mes, remision_millones_litros = ml),
@@ -119,7 +126,7 @@ tv_ejercicio <- function(T, years, narrow = FALSE) {
   yrs <- sort(as.integer(years))
   d <- T$remision |> dplyr::filter(ejercicio %in% yrs)
   if (!nrow(d)) return(NULL)
-  pal <- stats::setNames(tv_colours(length(yrs)), yrs)
+  pal <- stats::setNames(year_colour(yrs), yrs)
   last <- max(yrs)
   tot <- d |> dplyr::group_by(ejercicio) |> dplyr::summarise(total = sum(ml), n = dplyr::n(), .groups = "drop")
   d <- d |> dplyr::arrange(ejercicio, pos) |>
@@ -141,7 +148,7 @@ tv_ejercicio <- function(T, years, narrow = FALSE) {
     ggplot2::guides(colour = ggplot2::guide_legend(nrow = if (length(yrs) > 13) 2 else 1,
                                                    override.aes = list(linewidth = 1.2))) +
     tv_theme() +
-    if (narrow) ggplot2::theme(legend.position = "none")
+    ggplot2::theme(legend.position = "none")   # la leyenda son los botones de año
   list(plot = p, data = d, type = "point",
        title = "El año lechero, de julio a junio",
        sub = "Remisión mensual por ejercicio ganadero (1 de julio – 30 de junio), el mismo período que declaran los productores a DICOSE. Millones de litros.",
@@ -356,14 +363,12 @@ year_chips <- function(id, years, selected) {
   div(class = "tv-years",
       div(id = id, class = "shiny-input-checkboxgroup tv-chips", role = "group",
           `aria-label` = "Años a mostrar",
-          lapply(rev(years), function(y) tags$label(class = "tv-chip",
+          lapply(years, function(y) tags$label(class = "tv-chip",
             tags$input(type = "checkbox", name = id, value = y,
                        checked = if (as.character(y) %in% selected) NA),
-            span(class = "num", y)))),
-      div(class = "tv-presets",
-          tags$button(type = "button", class = "tv-preset", `data-target` = id, `data-preset` = "5", "Últimos 5"),
-          tags$button(type = "button", class = "tv-preset", `data-target` = id, `data-preset` = "2021", "Desde 2021"),
-          tags$button(type = "button", class = "tv-preset", `data-target` = id, `data-preset` = "all", "Todos")))
+            span(span(class = "tv-swatch", style = paste0("background:", year_colour(y))),
+                 span(class = "num", y))))),
+      span(class = "tv-years-hint", "Toque un año para mostrarlo u ocultarlo"))
 }
 
 tendencias_modal <- function(T) {
