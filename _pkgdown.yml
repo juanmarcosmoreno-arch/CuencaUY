@@ -1,0 +1,62 @@
+url: https://juanmarcosmoreno-arch.github.io/milkmapR/
+destination: _site
+title: CuencaUY
+lang: es
+
+template:
+  bootstrap: 5
+  light-switch: false
+  bslib:
+    bg: "#F5F3EE"
+    fg: "#172B2A"
+    primary: "#176B60"
+    secondary: "#667773"
+    border-color: "#DEE5DF"
+    link-color: "#176B60"
+    navbar-bg: "#FFFFFF"
+    navbar-light-color: "#667773"
+    border-radius: "10px"
+    base_font: {google: "Inter"}
+    heading_font: {google: "Inter"}
+    code_font: {google: "JetBrains Mono"}
+
+home:
+  title: "CuencaUY · La lechería uruguaya en el mapa"
+  description: >
+    Atlas en R/Shiny de la producción de leche en Uruguay a partir de datos
+    públicos (MGAP DICOSE–SNIG, INALE, CHIRPS, NASA POWER), con mapa 3D.
+  sidebar:
+    structure: [links, authors, dev]
+
+navbar:
+  structure:
+    left: [home, graficas, diagnostico, marca]
+    right: [search, github]
+  components:
+    home:
+      text: Inicio
+      href: index.html
+    graficas:
+      text: Gráficas
+      href: articles/graficas.html
+    diagnostico:
+      text: Diagnóstico de los datos
+      href: articles/diagnostico.html
+    marca:
+      text: Marca
+      href: articles/marca.html
+    github:
+      icon: fa-github
+      href: https://github.com/juanmarcosmoreno-arch/milkmapR
+      aria-label: GitHub
+
+articles:
+- title: Artículos
+  contents: [articles/graficas, articles/diagnostico, articles/marca]
+
+footer:
+  structure:
+    left: [cuenca]
+    right: built_by
+  components:
+    cuenca: "CuencaUY · datos públicos del MGAP, INALE, CHIRPS y NASA POWER"

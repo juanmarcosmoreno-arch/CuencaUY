@@ -1,0 +1,6 @@
+^_pkgdown\.yml$
+^_site$
+^pkgdown$
+^\.github$
+^renv$
+^renv\.lock$

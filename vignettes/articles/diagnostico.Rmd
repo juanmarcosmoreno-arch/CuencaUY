@@ -1,0 +1,11 @@
+---
+title: "Diagnóstico de los datos"
+description: "Cobertura, controles y limitaciones de DICOSE–SNIG 2021–2025."
+---
+
+Este informe lo genera `scripts/04_validate.R` (archivo `data/diagnostico.md`) cada vez que se procesan los datos.
+
+```{r, echo = FALSE, results = "asis"}
+x <- readLines(file.path("..", "..", "data", "diagnostico.md"), encoding = "UTF-8")
+cat(x[-1], sep = "\n")   # el título lo pone la página
+```

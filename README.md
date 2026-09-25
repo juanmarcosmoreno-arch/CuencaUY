@@ -1,6 +1,6 @@
-# CuencaUY · La lechería uruguaya en el mapa
+# CuencaUY · La lechería uruguaya en el mapa <img src="man/figures/logo.png" align="right" height="139" alt="Hexágono de CuencaUY" />
 
-![CuencaUY](www/brand/cuencauy-logo.png)
+**Página del proyecto:** <https://juanmarcosmoreno-arch.github.io/milkmapR/>
 
 CuencaUY (antes «Atlas Lechero Uruguay») es un atlas digital en R/Shiny que muestra cómo cambia la geografía de la lechería uruguaya entre los ejercicios 2021 y 2025. Usa un mapa 3D en WebGL (mapgl + MapLibre) con los polígonos oficiales elevados según la magnitud del indicador. Los datos provienen de las declaraciones juradas DICOSE–SNIG del MGAP.
 
@@ -45,6 +45,14 @@ Rscript scripts/run_pipeline.R --refresh  # fuerza la nueva descarga
 ```
 
 El pipeline descarga DICOSE, las series de INALE (remisión, precio al productor e IPC; `scripts/01b_download_inale.R` busca en la página de estadísticas las URL de cada mes) y la cartografía, siempre con caché, tiempo máximo y reintentos. Registra cada archivo en `data-raw/manifest.csv` (URL, fecha de descarga, ejercicio, estado preliminar o actualizado, MD5), valida los datos y regenera `data/`. Para incorporar un ejercicio nuevo (2026), añada su identificador del catálogo a `DICOSE_DATASETS` en `scripts/_common.R`.
+
+### Página web (pkgdown)
+
+```sh
+Rscript tools/pkgdown/build_site.R     # → _site/ (requiere pkgdown)
+```
+
+La página se publica sola en GitHub Pages con cada push a `main` (`.github/workflows/pkgdown.yaml`). La primera vez hay que elegir, en *Settings → Pages → Build and deployment*, la fuente **GitHub Actions**.
 
 ### Pruebas
 
@@ -119,6 +127,10 @@ Todas las cifras salen de fuentes públicas descargadas por el pipeline: ninguna
 | ![Tendencias en escritorio](docs/capturas/tendencias-escritorio.png) | ![Tendencias en el celular](docs/capturas/tendencias-movil.png) |
 
 ## Marca y presentación
+
+<img src="docs/marca/cuencauy-hex-520.png" align="right" width="150" alt="Hexágono de CuencaUY" />
+
+El hexágono sigue el formato de los stickers de R (2 × 2,31 pulgadas) con el símbolo del logo oficial y los colores de la app. Se regenera con `python3 tools/hex/hexagono.py` (requiere Pillow), que escribe `man/figures/logo.png` (el que usa pkgdown) y `docs/marca/cuencauy-hex*.png`.
 
 Al abrir la app se reproducen los primeros 6 s de la animación del logo (`www/intro/`, WebM VP9 con respaldo MP4 H.264, sin audio). Se puede saltar con el botón, un clic o las teclas Esc, Enter o espacio. Con «reducir movimiento» activado en el sistema, se muestra el logo fijo 1,5 s. Si el video no se puede reproducir, la app aparece igual a los 2,5 s. Logo, favicon e ícono están en `www/brand/`, y la guía de marca en `docs/marca/`.
 
