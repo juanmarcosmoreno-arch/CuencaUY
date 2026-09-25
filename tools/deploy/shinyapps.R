@@ -16,13 +16,21 @@
 # instalan en el servidor con las mismas versiones que tenés en tu computadora.
 
 APP_NAME <- Sys.getenv("CUENCAUY_APP", "cuencauy")    # dirección: https://<cuenta>.shinyapps.io/cuencauy/
+# Con más de una cuenta conectada, se usa esta (por ejemplo, Sys.setenv(CUENCAUY_CUENTA = "cuencauy")).
+CUENTA <- Sys.getenv("CUENCAUY_CUENTA", "")
 
 if (!requireNamespace("rsconnect", quietly = TRUE)) {
   install.packages("rsconnect", type = if (.Platform$pkgType == "source") "source" else "binary",
                    repos = "https://cloud.r-project.org")
 }
-if (!nrow(rsconnect::accounts(server = "shinyapps.io"))) {
+cuentas <- rsconnect::accounts(server = "shinyapps.io")$name
+if (!length(cuentas)) {
   stop("Falta conectar la cuenta: ejecutá primero rsconnect::setAccountInfo(...) (ver arriba).", call. = FALSE)
+}
+if (!nzchar(CUENTA)) {
+  if (length(cuentas) > 1) stop("Hay varias cuentas conectadas (", paste(cuentas, collapse = ", "),
+                                "). Elegí una con Sys.setenv(CUENCAUY_CUENTA = \"...\").", call. = FALSE)
+  CUENTA <- cuentas
 }
 
 datos <- file.path("data", c("atlas.rds", "clima.rds", "tendencias.rds", "basemap_style.json"))
@@ -37,10 +45,10 @@ archivos <- c(
   datos,
   list.files(file.path("tools", "fonts"), pattern = "\\.ttf$", full.names = TRUE)
 )
-message(sprintf("Subiendo %d archivos (%.1f MB) como «%s»…", length(archivos),
-                sum(file.size(archivos)) / 1e6, APP_NAME))
+message(sprintf("Subiendo %d archivos (%.1f MB) a https://%s.shinyapps.io/%s/ …", length(archivos),
+                sum(file.size(archivos)) / 1e6, CUENTA, APP_NAME))
 
 rsconnect::deployApp(
   appDir = ".", appFiles = archivos, appName = APP_NAME, appTitle = "CuencaUY",
-  server = "shinyapps.io", forceUpdate = TRUE, launch.browser = interactive()
+  account = CUENTA, server = "shinyapps.io", forceUpdate = TRUE, launch.browser = interactive()
 )
