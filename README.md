@@ -46,6 +46,20 @@ Rscript scripts/run_pipeline.R --refresh  # fuerza la nueva descarga
 
 El pipeline descarga DICOSE, las series de INALE (remisión, precio al productor e IPC; `scripts/01b_download_inale.R` busca en la página de estadísticas las URL de cada mes) y la cartografía, siempre con caché, tiempo máximo y reintentos. Registra cada archivo en `data-raw/manifest.csv` (URL, fecha de descarga, ejercicio, estado preliminar o actualizado, MD5), valida los datos y regenera `data/`. Para incorporar un ejercicio nuevo (2026), añada su identificador del catálogo a `DICOSE_DATASETS` en `scripts/_common.R`.
 
+### Publicar la app en shinyapps.io
+
+Una sola vez, conectá la cuenta:
+1. En shinyapps.io andá a **Account → Tokens → Show → Show secret**.
+2. Copiá el comando `rsconnect::setAccountInfo(...)` y ejecutalo en la consola de R. El secreto queda guardado solo en tu computadora.
+
+Después, desde la carpeta del proyecto:
+
+```sh
+Rscript tools/deploy/shinyapps.R      # → https://<cuenta>.shinyapps.io/cuencauy/
+```
+
+El script sube solo lo que la app necesita: `app.R`, `R/`, `www/`, los datos procesados de `data/` y la tipografía, en total unos 2 MB. Para actualizar la app, se vuelve a correr el mismo comando.
+
 ### Página web (pkgdown)
 
 ```sh
